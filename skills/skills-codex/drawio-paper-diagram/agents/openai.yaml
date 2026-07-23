@@ -1,0 +1,4 @@
+interface:
+  display_name: "Draw.io Paper Diagram"
+  short_description: "Create editable LaTeX-aware academic Draw.io diagrams"
+  default_prompt: "Use $drawio-paper-diagram to create or patch an editable academic Draw.io figure with true LaTeX mathematics."

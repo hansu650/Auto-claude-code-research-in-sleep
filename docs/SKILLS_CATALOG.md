@@ -1,6 +1,6 @@
 # ARIS Skills Catalog
 
-Every skill that ships with ARIS, grouped by role. **80 skills** as of the
+Every skill that ships with ARIS, grouped by role. **81 skills** as of the
 latest update; new skills land via PR and get added to the table below.
 
 - Each `Skill` link goes to the canonical `SKILL.md` (the LLM-readable spec).
@@ -111,6 +111,7 @@ LaTeX generation, figure / diagram production, prose polishing.
 | [`/paper-write`](../skills/paper-write/SKILL.md) | Section-by-section LaTeX generation (ICLR / NeurIPS / ICML / IEEE / ACL / AAAI / CVPR / ACM MM). Anti-hallucination BibTeX via DBLP / CrossRef | None |
 | [`/paper-figure`](../skills/paper-figure/SKILL.md) | Publication-quality matplotlib / seaborn plots + LaTeX comparison tables from experiment results | matplotlib / seaborn |
 | [`/figure-spec`](../skills/figure-spec/SKILL.md) | Deterministic JSON → SVG renderer for architecture / workflow / pipeline / audit-cascade diagrams. Shape-aware edge clipping, self-loops, CJK width estimation | None |
+| [`/drawio-paper-diagram`](../skills/drawio-paper-diagram/SKILL.md) | Editable publication-quality Draw.io diagrams with true MathJax labels, vector-only assets, reference-guided storytelling, and source-level validation | None |
 | [`/paper-illustration`](../skills/paper-illustration/SKILL.md) | AI architecture + method illustrations via Gemini image generation, with Claude-supervised iterative refinement | `GEMINI_API_KEY` |
 | [`/paper-illustration-image2`](../skills/paper-illustration-image2/SKILL.md) | Codex-native image generation alternative — uses ChatGPT Plus / Pro quota via local Codex app-server bridge (no Gemini key) | Codex app-server + `codex-image2` MCP bridge |
 | [`/mermaid-diagram`](../skills/mermaid-diagram/SKILL.md) | Generate Mermaid diagrams from requirements — flowcharts, sequence, class, ER, Gantt, with syntax verification | None |

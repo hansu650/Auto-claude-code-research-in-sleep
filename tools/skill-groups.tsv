@@ -89,6 +89,7 @@ skill	render-html	paper-core	-	MD/JSON 工件渲染成 HTML 报告
 skill	paper-illustration	paper-visuals	-	AI 生成论文插图(Gemini)
 skill	paper-illustration-image2	paper-visuals	-	AI 插图备选(Codex 原生画图)
 skill	figure-spec	paper-visuals	-	确定性矢量架构/流程图(SVG)
+skill	drawio-paper-diagram	paper-visuals	-	可编辑 Draw.io 论文图，支持真实 LaTeX/MathJax 与矢量素材
 skill	mermaid-diagram	paper-visuals	-	Mermaid 流程/时序/类图
 skill	pixel-art	paper-visuals	-	像素画生成
 skill	paper-poster	paper-visuals	paper-poster-html	(已弃用)重定向到 poster-html

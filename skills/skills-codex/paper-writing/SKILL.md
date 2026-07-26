@@ -270,6 +270,7 @@ Invoke `/paper-write` to generate section-by-section LaTeX:
 - Clean stale files from previous section structures
 - Automated bib cleaning (remove uncited entries)
 - De-AI polish (remove "delve", "pivotal", "landscape"...)
+- Apply `/paper-language-style` during drafting so the paper follows a problem-driven, mechanism-clear, figure-coordinated, evidence-grounded narrative without changing the factual envelope
 - GPT-5.6-Sol reviews each section for quality
 
 **Output:** `paper/` directory with `main.tex`, `sections/*.tex`, `references.bib`, `math_commands.tex`.

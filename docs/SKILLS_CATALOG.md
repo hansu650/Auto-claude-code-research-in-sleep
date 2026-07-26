@@ -1,6 +1,6 @@
 # ARIS Skills Catalog
 
-Every skill that ships with ARIS, grouped by role. **81 skills** as of the
+Every skill that ships with ARIS, grouped by role. **82 skills** as of the
 latest update; new skills land via PR and get added to the table below.
 
 - Each `Skill` link goes to the canonical `SKILL.md` (the LLM-readable spec).
@@ -109,6 +109,7 @@ LaTeX generation, figure / diagram production, prose polishing.
 |---|---|---|
 | [`/paper-plan`](../skills/paper-plan/SKILL.md) | Generate a structured paper outline from review conclusions + experiment results — claims-evidence matrix, section structure, figure plan, citation scaffolding | None |
 | [`/paper-write`](../skills/paper-write/SKILL.md) | Section-by-section LaTeX generation (ICLR / NeurIPS / ICML / IEEE / ACL / AAAI / CVPR / ACM MM). Anti-hallucination BibTeX via DBLP / CrossRef | None |
+| [`/paper-language-style`](../skills/paper-language-style/SKILL.md) | Problem-driven, mechanism-clear, figure-coordinated narrative layer for drafting and revising academic papers without changing scientific facts | None |
 | [`/paper-figure`](../skills/paper-figure/SKILL.md) | Publication-quality matplotlib / seaborn plots + LaTeX comparison tables from experiment results | matplotlib / seaborn |
 | [`/figure-spec`](../skills/figure-spec/SKILL.md) | Deterministic JSON → SVG renderer for architecture / workflow / pipeline / audit-cascade diagrams. Shape-aware edge clipping, self-loops, CJK width estimation | None |
 | [`/drawio-paper-diagram`](../skills/drawio-paper-diagram/SKILL.md) | Editable publication-quality Draw.io diagrams with true MathJax labels, vector-only assets, reference-guided storytelling, and source-level validation | None |

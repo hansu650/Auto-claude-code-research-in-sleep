@@ -1,0 +1,4 @@
+interface:
+  display_name: "Paper Language Style"
+  short_description: "Write clear, evidence-grounded academic paper narratives"
+  default_prompt: "Use $paper-language-style to revise this paper section into a clear, problem-driven, evidence-grounded narrative without changing the scientific facts."

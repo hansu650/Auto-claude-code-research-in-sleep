@@ -347,6 +347,7 @@ If `— style-ref: <source>` was passed in `$ARGUMENTS` and the helper succeeded
 
 **What this does:**
 - Write each section following the plan, with proper LaTeX formatting
+- Apply `/paper-language-style` during drafting so the paper follows a problem-driven, mechanism-clear, figure-coordinated, evidence-grounded narrative without changing the factual envelope
 - Insert figure/table references from `figures/latex_includes.tex`
 - Build `references.bib` from citation scaffolding
 - Clean stale files from previous section structures

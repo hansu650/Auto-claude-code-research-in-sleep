@@ -32,6 +32,7 @@ If no PAPER_PLAN.md exists, ask the user to run `/paper-plan` first or provide a
 Keep the existing `insleep` workflow, file layout, and defaults. Use the shared references below only when they improve writing quality:
 
 - Read `../shared-references/writing-principles.md` before drafting the Abstract, Introduction, Related Work, or when prose feels generic.
+- Apply `../paper-language-style/SKILL.md` as the default narrative layer. Load only its section-specific reference needed for the current section; for a full-paper rewrite, load all four references. This layer may reorganize exposition and figure handoffs but must not change facts, claims, numbers, protocols, or citations.
 - Read `../shared-references/venue-checklists.md` during the final write-up and submission-readiness pass.
 - Read `../shared-references/citation-discipline.md` only when the built-in DBLP/CrossRef workflow is insufficient.
 

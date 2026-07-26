@@ -73,9 +73,10 @@ skill	serverless-modal	experiments	-	Modal 无服务器 GPU
 skill	experiment-audit	experiments	-	实验诚实度审计(防假结果)
 skill	result-to-claim	experiments	-	结果能支撑什么 claim 的裁决
 skill	ablation-planner	experiments	-	消融实验规划
-skill	paper-writing	paper-core	paper-plan,paper-write,paper-compile,paper-figure,figure-spec,proof-checker,paper-claim-audit,citation-audit,auto-paper-improvement-loop,integrity-forensics,kill-argument	W3:从报告到投稿级 PDF 全流程
+skill	paper-writing	paper-core	paper-plan,paper-write,paper-language-style,paper-compile,paper-figure,figure-spec,proof-checker,paper-claim-audit,citation-audit,auto-paper-improvement-loop,integrity-forensics,kill-argument	W3:从报告到投稿级 PDF 全流程
 skill	paper-plan	paper-core	-	论文大纲生成
-skill	paper-write	paper-core	-	按大纲逐节写 LaTeX
+skill	paper-write	paper-core	paper-language-style	按大纲逐节写 LaTeX
+skill	paper-language-style	paper-core	-	问题驱动、机制清楚、图文协同、证据闭环的论文语言与叙事风格层
 skill	paper-compile	paper-core	-	LaTeX 编译修错出 PDF
 skill	paper-figure	paper-core	-	从实验结果出论文图表
 skill	citation-audit	paper-core	render-html	引用真实性/正确性核查

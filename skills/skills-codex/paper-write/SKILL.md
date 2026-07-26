@@ -35,6 +35,8 @@ Keep the existing workflow, file layout, and defaults. Use the shared references
 
 These references are support material, not extra workflow phases.
 
+- Apply `../paper-language-style/SKILL.md` as the default narrative layer. Load only its section-specific reference needed for the current section; for a full-paper rewrite, load all four references. This layer may reorganize exposition and figure handoffs but must not change facts, claims, numbers, protocols, or citations.
+
 ## Templates
 
 ### Venue-Specific Setup

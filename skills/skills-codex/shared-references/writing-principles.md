@@ -95,33 +95,19 @@ Most reviewers encounter the paper in this order:
 
 ## How to Write the Abstract
 
-### Sebastian Farquhar's Five-Sentence Formula
+Use the semantic moves and evidence rules in
+[`section-blueprints.md`](section-blueprints.md). They are intentionally not a fixed
+sentence template: a method, theory, diagnostic, and position paper need different
+subsets. Obey the venue's explicit word limit; when none is known, 150--200 words is a
+useful default target.
 
-Prefer a compact five-part abstract:
+At the prose level, a good abstract should:
 
-1. What you achieved
-2. Why the problem is important and difficult
-3. How you approached it
-4. What evidence supports the claim
-5. What number, result, or guarantee the reader should remember
-
-### What a Good Abstract Should Do
-
-- Enter the paper's specific contribution in the first one or two sentences.
-- Include at least one explicit quantitative result.
-- Be understandable without the main text.
-- Avoid undefined acronyms.
-- Avoid depending on citations to explain itself.
-
-### A Good Abstract Sketch
-
-```text
-We prove that X converges linearly under assumption Y.
-This addresses a long-standing question about why optimization remains stable in an apparently non-convex setting.
-Our analysis reduces the training dynamics to Z, which yields a tractable theoretical structure.
-We validate the prediction on datasets A and B and observe close agreement between theory and experiment.
-Compared with prior methods, we reduce error by 15% and provide the first convergence guarantee in this setting.
-```
+- enter the paper's specific setting and unresolved limitation quickly;
+- explain the method, analytical object, or study design in plain language;
+- report only evidence and scope qualifiers supported by the canonical Claim Ledger;
+- remain understandable without citations or undefined acronyms; and
+- end with a scope-aware takeaway rather than a broader promise.
 
 ### Openings to Delete
 
@@ -147,7 +133,7 @@ It should satisfy the following:
 - the Introduction should include 2-4 contribution bullets,
 - the central story should already make sense before technical detail arrives.
 
-### Recommended Structure
+### Recommended Rhetorical Flow
 
 1. **Opening hook**
    - What problem does the paper address?
@@ -162,9 +148,9 @@ It should satisfy the following:
    - What is the key insight?
 
 4. **Contribution bullets**
-   - 2-4 items
+   - 2-4 items, each mapped to a Claim ID and evidence location
    - specific and falsifiable
-   - ideally no longer than 1-2 lines each
+   - role-based rather than forced into identical "We ..." openings
 
 5. **Results preview**
    - surface the strongest result early
@@ -173,21 +159,10 @@ It should satisfy the following:
 6. **Optional roadmap**
    - briefly describe the remaining sections
 
-### Contribution Bullets: Good vs Bad
-
-Good:
-
-- We prove that X converges in O(n log n) under assumption Y.
-- We introduce architecture Z, which reduces memory by 40%.
-- We improve method A by 15% on benchmark C.
-
-Bad:
-
-- We study problem X.
-- We perform extensive experiments.
-- We make several contributions to the field.
-
-The problem with the “bad” bullets is not grammar. It is that a reviewer cannot cleanly agree, disagree, or challenge them.
+Use [`section-blueprints.md`](section-blueprints.md) for the contribution-role patterns,
+Method contract, Conclusion mirror, and front-matter coverage index. The problem with a
+bullet such as “we perform extensive experiments” is not grammar; it is that a reviewer
+cannot cleanly agree, disagree, or challenge it.
 
 ## Sentence-Level Clarity
 
@@ -427,30 +402,11 @@ It should usually do at least one of the following:
 - show the strongest comparison that justifies the paper,
 - or provide the simplest visual summary of the main claim.
 
-### Design Principles
-
-1. **Figure 1 is crucial**
-2. **captions should be self-contained**
-3. **do not place a decorative title inside the figure**
-4. **plots should use vector graphics whenever possible**
-
-### Accessibility
-
-Account for color-vision deficiency.
-
-Do:
-
-- use colorblind-safe palettes,
-- avoid red-green pairings,
-- make sure the figure still works in grayscale,
-- use line styles and markers in addition to color.
-
-### Caption Rules
-
-- A reader should understand the point of the figure from the caption alone.
-- State what is being compared.
-- State what the reader should notice.
-- Do not make the caption depend on the surrounding paragraph for essential meaning.
+The canonical rules for figures, tables, captions, width, highlighting, compression, and
+standalone versus integrated rendering live in
+[`publication-layout-gates.md`](publication-layout-gates.md). At the prose level, make
+captions self-contained and tell the reader what is compared and what conclusion the
+artifact supports. Prefer vector plots and avoid decorative titles inside figures.
 
 ## Common Mistakes
 
@@ -500,7 +456,8 @@ Do:
 
 ### Structure
 
-- [ ] The abstract follows the five-sentence formula.
+- [ ] The Abstract uses the applicable semantic moves in `section-blueprints.md` and
+      obeys the venue word limit.
 - [ ] The Introduction stays within about 1-1.5 pages.
 - [ ] The method starts by page 2-3.
 - [ ] There are 2-4 concrete contribution bullets.

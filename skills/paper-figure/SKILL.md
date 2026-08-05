@@ -1,11 +1,23 @@
 ---
 name: paper-figure
-description: "Generate publication-quality figures and tables from experiment results. Use when user says \"画图\", \"作图\", \"generate figures\", \"paper figures\", or needs plots for a paper."
+description: "Create or revise standalone publication-quality paper figures and tables from plans, data, or existing artifacts. Use for plots, comparison and ablation tables, multi-panel figures, diagrams, captions, table typography, and standalone figure/table layout; common requests include 画图, 画表, 改表格, paper figures, and redesign this table. In a new or context-free folder, inspect local artifacts first and request only missing blocking input."
 argument-hint: "[figure-plan-or-data-path]"
 allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, mcp__codex__codex, mcp__codex__codex-reply
 ---
 
 # Paper Figure: Publication-Quality Plots from Experiment Data
+
+<!-- BEGIN ARIS NEUTRAL: COLD START -->
+## Cold-Start Behavior
+
+Do not depend on prior chat or a pre-existing project narrative. First inspect the current directory for a paper plan, manuscript sources, result files, existing figures or tables, and venue instructions. If these artifacts are sufficient, proceed from them. If a required input is missing, ask only for the smallest blocking input and still provide a safe scaffold where possible. Keep all assumptions project-neutral; never import names, numbers, protocols, or design choices from another paper.
+<!-- END ARIS NEUTRAL: COLD START -->
+
+<!-- BEGIN ARIS NEUTRAL: PUBLICATION LAYOUT -->
+## Publication Layout Gate
+
+Read and follow [`publication-layout-gates.md`](../shared-references/publication-layout-gates.md) whenever planning, generating, revising, or validating a paper figure or table. This skill owns the standalone artifact gate: inspect the rendered figure or table at its intended final physical size without requiring a manuscript build. Record width class and dimensions; verify table header spans, three-line rule continuity, numeric alignment, declared metric direction and tie-aware highlighting, the ordered width-compression ladder, grayscale readability, and non-red/green semantics. Leave integrated-page validation to `paper-compile` and report it as pending when no compiled manuscript exists.
+<!-- END ARIS NEUTRAL: PUBLICATION LAYOUT -->
 
 Generate all figures and tables for a paper based on: **$ARGUMENTS**
 
@@ -16,11 +28,39 @@ Generate all figures and tables for a paper based on: **$ARGUMENTS**
 | **Data-driven plots** | ✅ Yes | Line plots (training curves), bar charts (method comparison), scatter plots, heatmaps, box/violin plots |
 | **Comparison tables** | ✅ Yes | LaTeX tables comparing prior bounds, method features, ablation results |
 | **Multi-panel figures** | ✅ Yes | Subfigure grids combining multiple plots (e.g., 3×3 dataset × method) |
-| **Architecture/pipeline diagrams** | ❌ No — manual | Model architecture, data flow diagrams, system overviews. At best can generate a rough TikZ skeleton, but **expect to draw these yourself** using tools like draw.io, Figma, or TikZ |
+| **Architecture/pipeline diagrams** | Route to a dedicated diagram skill | Use `drawio-paper-diagram`, `figure-spec`, or another available publication-diagram workflow; otherwise provide an editable skeleton and state the limitation |
 | **Generated image grids** | ❌ No — manual | Grids of generated samples (e.g., GAN/diffusion outputs). These come from running your model, not from this skill |
 | **Photographs / screenshots** | ❌ No — manual | Real-world images, UI screenshots, qualitative examples |
 
-**In practice:** For a typical ML paper, this skill handles ~60% of figures (all data plots + tables). The remaining ~40% (hero figure, architecture diagram, qualitative results) need to be created manually and placed in `figures/` before running `/paper-write`. The skill will detect these as "existing figures" and preserve them.
+**In practice:** This skill owns data plots, tables, multi-panel assembly, and the standalone artifact gate. For architecture, pipeline, or illustrative figures, route to the available dedicated diagram/image skill and then validate the returned artifact here. Preserve existing user-created artifacts.
+<!-- BEGIN ARIS NEUTRAL: DIAGRAM BACKENDS -->
+### Diagram Backend Routing Contract
+
+When the arguments include `diagram-backend: <value>`, use exactly one mapping
+for the requested semantic label:
+
+| Value | Delegate once to |
+|---|---|
+| `figurespec` | `figure-spec` |
+| `drawio` | `drawio-paper-diagram` |
+| `gemini` | `paper-illustration` |
+| `codex-image2` | `paper-illustration-image2` |
+| `mermaid` | `mermaid-diagram` |
+| `manual` or `false` | do not generate; inspect the supplied artifact |
+
+The handoff must include the semantic label, a locally grounded content brief, width
+class, required preserved details, caption budget, and expected editable/rendered output
+paths. A backend owns generation only. After it returns, resume this skill and run the
+mandatory standalone artifact gate on the returned or manually supplied artifact. Backend
+success alone is never completion.
+
+Do not call multiple backends for the same label unless the user explicitly asks for
+alternatives. If a requested backend is unavailable, use another mapping only with a
+documented reason and no semantic change; otherwise request the smallest blocking input.
+For `manual` or `false`, a missing artifact blocks only that label and requires
+the smallest missing source; an existing artifact still must pass the same standalone
+gate.
+<!-- END ARIS NEUTRAL: DIAGRAM BACKENDS -->
 
 ## Constants
 
@@ -34,29 +74,33 @@ Generate all figures and tables for a paper based on: **$ARGUMENTS**
 
 ## Inputs
 
-1. **PAPER_PLAN.md** — figure plan table (from `/paper-plan`)
+1. **PAPER_PLAN.md** — Figure/Table Layout Contract (from `/paper-plan`)
 2. **Experiment data** — JSON files, CSV files, or screen logs in `figures/` or project root
 3. **Existing figures** — any manually created figures to preserve
 
-If no PAPER_PLAN.md exists, scan for data files and ask the user which figures to generate.
+If `PAPER_PLAN.md` is absent, inspect the request, manuscript, data, and existing artifacts.
+Proceed when the intended figure or table can be inferred; ask only for the smallest
+blocking target or data description when it cannot.
 
 ## Workflow
 
-### Step 1: Read Figure Plan
+### Step 1: Read the Figure/Table Layout Contract
 
-Parse the Figure Plan table from PAPER_PLAN.md:
+Parse the Figure/Table Layout Contract from PAPER_PLAN.md:
 
 ```markdown
-| ID | Type | Description | Data Source | Priority |
-|----|------|-------------|-------------|----------|
-| Fig 1 | Architecture | ... | manual | HIGH |
-| Fig 2 | Line plot | ... | figures/exp.json | HIGH |
+| Label | Kind | Width class | Preferred placement | Must preserve | Caption budget | Priority |
+|---|---|---|---|---|---|---|
+| fig:overview | figure* | double column | near first discussion | readable overview at final size | 2-3 lines | primary |
+| tab:primary | table | single column | before secondary diagnostics | metric, protocol, grouping, units | 1-2 lines | primary |
 ```
+
+Read each row together with its data source and Claim ID/evidence link in the plan.
 
 Identify:
 - Which figures can be auto-generated from data
-- Which need manual creation (architecture diagrams, etc.)
-- Which are comparison tables (generate as LaTeX)
+- Which require a dedicated diagram/image skill and return here for artifact validation
+- Which are tables (generate as separate LaTeX publication artifacts, not figures)
 
 ### Step 2: Set Up Plotting Environment
 
@@ -99,16 +143,16 @@ def save_fig(fig, name, fmt=FORMAT):
 
 Use this decision tree for data-driven figures (inspired by Imbad0202/academic-research-skills):
 
-| Data Pattern | Recommended Type | Size |
+| Data Pattern | Recommended Type | Default Width Class |
 |-------------|-----------------|------|
-| X=time/steps, Y=metric | Line plot | 0.48\textwidth |
-| Methods × 1 metric | Bar chart | 0.48\textwidth |
-| Methods × multiple metrics | Grouped bar / radar | 0.95\textwidth |
-| Two continuous variables | Scatter plot | 0.48\textwidth |
-| Matrix / grid values | Heatmap | 0.48\textwidth |
-| Distribution comparison | Box/violin plot | 0.48\textwidth |
-| Multi-dataset results | Multi-panel (subfigure) | 0.95\textwidth |
-| Prior work comparison | LaTeX table | — |
+| X=time/steps, Y=metric | Line plot | single column |
+| Methods × 1 metric | Bar chart | single column |
+| Methods × multiple metrics | Grouped bar / radar | double column |
+| Two continuous variables | Scatter plot | single column |
+| Matrix / grid values | Heatmap | single column |
+| Distribution comparison | Box/violin plot | single column |
+| Multi-dataset results | Multi-panel (subfigure) | double column |
+| Prior work comparison | LaTeX table | choose from column count |
 
 ### Step 4: Generate Each Figure
 
@@ -146,7 +190,7 @@ for bar, val in zip(bars, values):
 save_fig(fig, 'fig3_comparison')
 ```
 
-**Comparison tables** (LaTeX, for theory papers):
+**Comparison tables** (LaTeX, for theory papers; apply the canonical table-construction and highlighting rules):
 ```latex
 \begin{table}[t]
 \centering
@@ -158,17 +202,17 @@ Method & Rate & Depends on $D$? & Multi-modal? \\
 \midrule
 \citet{MinimaxOkoAS23} & $n^{-s'/D}$ & Yes (curse) & No \\
 \citet{ScoreMatchingdistributionrecovery} & $n^{-2/d}$ & No & No \\
-\textbf{Ours} & $\sqrt{\sum n_k d_k / n}$ & No & Yes \\
+Proposed method & $\sqrt{\sum n_k d_k / n}$ & No & Yes \\
 \bottomrule
 \end{tabular}
 \end{table}
 ```
 
-**Architecture/pipeline diagrams** (MANUAL — outside this skill's scope):
-- These require manual creation using draw.io, Figma, Keynote, or TikZ
-- This skill can generate a rough TikZ skeleton as a starting point, but **do not expect publication-quality results**
-- If the figure already exists in `figures/`, preserve it and generate only the LaTeX `\includegraphics` snippet
-- Flag as `[MANUAL]` in the figure plan and `latex_includes.tex`
+**Architecture/pipeline diagrams** (delegated artifact path):
+- Route to a dedicated publication-diagram skill when one is available; preserve its editable source plus rendered output
+- If no such capability is available, provide an editable TikZ/Draw.io specification or skeleton and state what remains unresolved
+- If the figure already exists, preserve it and validate the rendered output at its declared final size
+- Return the completed artifact to this skill's standalone gate before generating the LaTeX include
 
 ### Step 5: Run All Scripts
 
@@ -193,7 +237,7 @@ For each figure, output the LaTeX code to include it:
 % === Fig 2: Training Curves ===
 \begin{figure}[t]
     \centering
-    \includegraphics[width=0.48\textwidth]{figures/fig2_training_curves.pdf}
+    \includegraphics[width=\columnwidth]{figures/fig2_training_curves.pdf}
     \caption{Training curves comparing factorized and CRF-LR denoising.}
     \label{fig:training_curves}
 \end{figure}
@@ -260,7 +304,7 @@ those two as binding, not overridable):**
 - [ ] Legend does not overlap data
 - [ ] Axis labels have units where applicable
 - [ ] Axis labels are publication-quality (not variable names like `emp_rate`)
-- [ ] Figure width fits single column (0.48\textwidth) or full width (0.95\textwidth)
+- [ ] Width matches the declared class: `\columnwidth` for single-column or `\textwidth` for double-column output
 - [ ] PDF output is vector (not rasterized text)
 - [ ] No matplotlib default title (remove `plt.title` for publications)
 - [ ] Serif font matches paper body text (Times / Computer Modern)
@@ -291,21 +335,21 @@ figures/
 - **Colorblind-safe** — verify with https://davidmathlogic.com/colorblind/ if needed
 - **One script per figure** — easy to re-run individual figures when data changes
 - **No titles inside figures** — captions are in LaTeX only
-- **Comparison tables count as figures** — generate them as standalone .tex files
+- **Tables are first-class artifacts, not figures** — generate standalone `.tex` sources and validate their renders when available
 
 ## Figure Type Reference
 
-| Type | When to Use | Typical Size |
+| Type | When to Use | Default Width Class |
 |------|------------|--------------|
-| Line plot | Training curves, scaling trends | 0.48\textwidth |
-| Bar chart | Method comparison, ablation | 0.48\textwidth |
-| Grouped bar | Multi-metric comparison | 0.95\textwidth |
-| Scatter plot | Correlation analysis | 0.48\textwidth |
-| Heatmap | Attention, confusion matrix | 0.48\textwidth |
-| Box/violin | Distribution comparison | 0.48\textwidth |
-| Architecture | System overview | 0.95\textwidth |
-| Multi-panel | Combined results (subfigures) | 0.95\textwidth |
-| Comparison table | Prior bounds vs. ours (theory) | full width |
+| Line plot | Training curves, scaling trends | single column |
+| Bar chart | Method comparison, ablation | single column |
+| Grouped bar | Multi-metric comparison | double column |
+| Scatter plot | Correlation analysis | single column |
+| Heatmap | Attention, confusion matrix | single column |
+| Box/violin | Distribution comparison | single column |
+| Architecture | System overview | double column |
+| Multi-panel | Combined results (subfigures) | double column |
+| Comparison table | Prior bounds vs. ours (theory) | choose from column count |
 
 ## Acknowledgements
 

@@ -38,9 +38,23 @@ This pipeline accepts one of:
 
 1. **`NARRATIVE_REPORT.md`** (best) — structured research narrative with claims, experiments, results, figures
 2. **Research direction + experiment results** — the skill will help draft the narrative first
-3. **Existing `PAPER_PLAN.md`** — skip Phase 1, start from Phase 2
+3. **Existing `PAPER_PLAN.md`** — skip Phase 1 only after the compatibility gate below passes
 
 The more detailed the input (especially figure descriptions and quantitative results), the better the output.
+
+**Existing-plan compatibility gate (mandatory):** Before treating an existing
+`PAPER_PLAN.md` as current, verify these exact canonical column structures:
+
+1. `## Canonical Claim Ledger` — `Claim ID | Role | Exact claim | Comparator or N/A | Evidence (experiment/table/figure/theorem/proof) | Scope/data access | Selection/training/adaptation or N/A | Limitation | Forbidden expansion`
+2. `## Front-Matter Coverage Index` — `Claim ID | Abstract move | Intro bullet | Body subsection | Evidence location | Conclusion sentence`
+3. `## Figure/Table Layout Contract` — `Label | Kind | Width class | Preferred placement | Must preserve | Caption budget | Priority`
+
+All three need usable rows and consistent IDs or semantic labels.
+
+If any item is absent or merely represented by a legacy
+claim/evidence store or artifact list, do not skip Phase 1. Invoke the Gemini
+overlay of `/paper-plan` to migrate or regenerate the plan, then rerun this
+gate. A matching filename alone is not compatibility evidence.
 
 ## Pipeline
 
@@ -54,13 +68,16 @@ Invoke `/paper-plan` to create the structural outline:
 
 **What this does:**
 - Parse NARRATIVE_REPORT.md for claims, evidence, and figure descriptions
-- Build a **Claims-Evidence Matrix** — every claim maps to evidence, every experiment supports a claim
+- Build the **Canonical Claim Ledger** as the one authoritative mapping from every claim and number to evidence, protocol, scope, and allowed wording
 - Design section structure (5-8 sections depending on paper type)
-- Plan figure/table placement with data sources
+- Build the **Front-Matter Coverage Index** so the Abstract, Introduction contributions, and Conclusion mirror the same supported claims
+- Build the **Figure/Table Layout Contract** with artifact purpose, data source, width class, intended placement, and validation owner
 - Scaffold citation structure
 - Gemini reviews the plan for completeness via the `/paper-plan` overlay
 
-**Output:** `PAPER_PLAN.md` with section plan, figure plan, citation scaffolding.
+**Output:** `PAPER_PLAN.md` with the Canonical Claim Ledger, section plan,
+Front-Matter Coverage Index, Figure/Table Layout Contract, and citation
+scaffolding.
 
 **Checkpoint:** Present the plan summary to the user.
 
@@ -68,7 +85,7 @@ Invoke `/paper-plan` to create the structural outline:
 📐 Paper plan complete:
 - Title: [proposed title]
 - Sections: [N] ([list])
-- Figures: [N] auto-generated + [M] manual
+- Figure/table contract: [N] required artifacts ([M] need user-only source input)
 - Target: [VENUE], [PAGE_LIMIT] pages
 
 Shall I proceed with figure generation?
@@ -86,7 +103,7 @@ Invoke `/paper-figure` to generate data-driven plots and tables:
 ```
 
 **What this does:**
-- Read figure plan from PAPER_PLAN.md
+- Read the Figure/Table Layout Contract from PAPER_PLAN.md
 - Generate matplotlib/seaborn plots from JSON/CSV data
 - Generate LaTeX comparison tables
 - Create `figures/latex_includes.tex` for easy insertion
@@ -94,34 +111,43 @@ Invoke `/paper-figure` to generate data-driven plots and tables:
 
 **Output:** `figures/` directory with PDFs, generation scripts, and LaTeX snippets.
 
-#### Phase 2b: AI Illustration Generation (when `illustration: true`)
+#### Phase 2b: Architecture and Illustration Artifacts
 
-**Skip this step entirely if `illustration` is not set or is `false`.**
-
-If the paper plan includes architecture diagrams, pipeline figures, or method illustrations, invoke `/paper-illustration`:
+If the Figure/Table Layout Contract includes architecture diagrams, pipeline
+figures, or method illustrations, **re-invoke the Gemini overlay of
+`/paper-figure` as the sole artifact owner**:
 
 ```
-/paper-illustration "[method description from PAPER_PLAN.md or NARRATIVE_REPORT.md]"
+/paper-figure "PAPER_PLAN.md — complete the pending architecture and illustration artifacts"
 ```
 
-**What this does:**
-- Codex plans the layout → Gemini optimizes → Nano Banana Pro renders → Codex reviews (score ≥ 9)
-- Output: `figures/ai_generated/*.png` — publication-quality method diagrams
-- Requires `GEMINI_API_KEY` environment variable
+The orchestrator must not call `/paper-illustration`, `/figure-spec`,
+`/drawio-paper-diagram`, `/mermaid-diagram`, or another renderer directly.
+`/paper-figure` selects and delegates to the appropriate available backend,
+preserves editable sources and rendered outputs, then resumes ownership and
+returns each artifact through its **mandatory standalone artifact gate** at
+the declared final physical size. This prevents duplicate generation and
+keeps one artifact manifest.
 
-> **Without `illustration: true`:** Architecture diagrams must still be created manually (draw.io, Figma, TikZ) and placed in `figures/` before proceeding — same as before.
+Preserve user-supplied artifacts and validate them through the same
+standalone gate. Ask the user only for genuinely unavailable source material
+(for example, required photographs or model-generated samples); do not label
+an artifact "manual" merely because it is a diagram.
 
-**Checkpoint:** List generated vs manual figures.
+**Checkpoint:** List generated, preserved, and blocked artifacts.
 
 ```
 📊 Figures complete:
-- Data plots (auto): [list]
-- AI illustrations (auto): [list, if illustration: true]
-- Manual (need your input): [list]
+- Data plots and tables: [list]
+- Delegated architecture/illustrations: [list + backend]
+- Preserved user-supplied artifacts: [list]
+- Pending user-only source material: [list, if any]
+- Standalone artifact gate: PASS/FAIL by artifact
 - LaTeX snippets: figures/latex_includes.tex
 
-[If manual figures needed]: Please add them to figures/ before I proceed.
-[If all auto]: Shall I proceed with LaTeX writing?
+[If required user-only source material is missing]: Pause only the affected
+artifact and request it.
+[If every required artifact passes]: Shall I proceed with LaTeX writing?
 ```
 
 ### Phase 3: LaTeX Writing
@@ -222,6 +248,31 @@ the Final Report require `python3 "$GATE_HELPER" fresh --paper-dir paper/
 --anti-ar-commit "$ANTI_AR_COMMIT"` exit 0 — an opted-in run without a fresh gate is **incomplete, not
 skippable**; gate `BLOCK` refuses the Final Report.
 
+### Phase 5.95: Final Integrated-Page Gate (mandatory)
+
+After the improvement loop and every audit-driven source correction are
+finished, invoke `/paper-compile` one final time on the actual delivery tree:
+
+```
+/paper-compile "paper/ — final integrated-page gate"
+```
+
+This is not satisfied by a successful compiler exit. Before Phase 6, require
+all of the following to pass on the final PDF:
+
+1. inspect every final figure and table object at its intended physical size;
+2. inspect each object's target manuscript page at readable resolution;
+3. inspect the immediate preceding and following pages (or the one available
+   neighbor at a document boundary); and
+4. inspect an all-page thumbnail/contact sheet for global flow, float drift,
+   blank or duplicated pages, and inconsistent density.
+
+Record the inspected objects and page numbers with an explicit `PASS` in the
+compile report. Any `FAIL`, missing artifact, unreadable object, unresolved
+placement defect, or source edit after this inspection invalidates the gate;
+repair, rebuild, and rerun it. **Do not produce the Final Report until this
+gate passes.**
+
 ### Phase 6: Final Report
 
 ```markdown
@@ -241,6 +292,7 @@ skippable**; gate `BLOCK` refuses the Final Report.
 | 3. LaTeX Writing | ✅ | paper/sections/*.tex ([N] sections, [M] citations) |
 | 4. Compilation | ✅ | paper/main.pdf ([X] pages) |
 | 5. Improvement | ✅ | [score0]/10 → [score2]/10 |
+| 5.95 Final integrated-page gate | ✅ | final objects + target pages + neighbors + all-page thumbnails PASS |
 
 ## Improvement Scores
 | Round | Score | Key Changes |
@@ -260,8 +312,8 @@ skippable**; gate `BLOCK` refuses the Final Report.
 - [items from final review that weren't addressed]
 
 ## Next Steps
-- [ ] Visual inspection of PDF
-- [ ] Add any missing manual figures
+- [ ] Optional author preference review (the mandatory integrated visual gate already passed)
+- [ ] Archive editable figure/table sources and generation scripts
 - [ ] Submit to [venue] via OpenReview / CMT / HotCRP
 ```
 
@@ -279,8 +331,9 @@ skippable**; gate `BLOCK` refuses the Final Report.
 
 - **Don't skip phases.** Each phase builds on the previous one — skipping leads to errors.
 - **Checkpoint between phases** when AUTO_PROCEED=false. Present results and wait for approval.
-- **Manual figures first.** If the paper needs architecture diagrams or qualitative results, the user must provide them before Phase 3.
+- **One figure/table owner.** Route every generated or supplied artifact through the Gemini `/paper-figure` overlay and its standalone gate. Let that owner delegate to a backend; do not call generators in parallel. Request user input only for genuinely unavailable source material, and require every planned artifact to pass before Phase 3.
 - **Compilation must succeed** before entering the improvement loop. Fix all errors first.
+- **Final integrated-page verification is mandatory.** After all later edits, rerun `/paper-compile` and require final objects, target pages, adjacent pages, and all-page thumbnails to pass before reporting completion.
 - **Preserve all PDFs.** The user needs round0/round1/round2 for comparison.
 - **Document everything.** The pipeline report should be self-contained.
 - **Respect page limits.** If the paper exceeds the venue limit, suggest specific cuts before the improvement loop.

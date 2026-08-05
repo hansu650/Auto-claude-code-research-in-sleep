@@ -1,6 +1,6 @@
 ---
 name: paper-write
-description: "Draft LaTeX paper section by section from an outline. Use when user says \"写论文\", \"write paper\", \"draft LaTeX\", \"开始写\", or wants to generate LaTeX content from a paper plan."
+description: "Write, rewrite, or polish research-paper prose and LaTeX from available project evidence. Use for a full draft or individual sections, especially the Abstract, Introduction and contribution bullets, Method, Conclusion, limitations, and future work; common requests include 写论文, 改摘要, write paper, rewrite abstract, and polish conclusion. In a new or context-free folder, inspect local artifacts first and request only missing blocking input."
 argument-hint: "[venue-or-section] [— style-ref: <source>]"
 allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, WebSearch, WebFetch, mcp__codex__codex, mcp__codex__codex-reply
 ---
@@ -8,6 +8,20 @@ allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, WebSearch, WebFetch, mcp_
 # Paper Write: Section-by-Section LaTeX Generation
 
 Draft a LaTeX paper based on: **$ARGUMENTS**
+
+<!-- BEGIN ARIS NEUTRAL: COLD START -->
+## Cold-start behavior
+
+- Do not require prior conversation or a particular workspace. Treat the current request and discovered project artifacts as the source of truth.
+- Inspect the current directory and any user-named paths first for relevant repository instructions, paper sources and PDFs, plans, claims, results, data, figures, tables, bibliography, and build files.
+- If the request and discovered artifacts are sufficient, proceed without asking the user to repeat context.
+- If required information is missing, ask only for the smallest blocking input. When safe, still provide the best useful scaffold, partial artifact, or diagnostic supported by the available evidence.
+- Stay project-neutral: do not assume any paper, method, dataset, metric, filename, numbering, venue, build tool, or result that is not stated or discovered.
+<!-- END ARIS NEUTRAL: COLD START -->
+
+The constants and template paths below are full-draft initialization fallbacks, not facts
+about an existing manuscript. Do not apply them to a section-only rewrite or when local
+files establish another venue, anonymity setting, page rule, or directory layout.
 
 ## Constants
 
@@ -19,19 +33,22 @@ Draft a LaTeX paper based on: **$ARGUMENTS**
 
 ## Inputs
 
-1. **PAPER_PLAN.md** — outline with claims-evidence matrix, section plan, figure plan (from `/paper-plan`)
+1. **PAPER_PLAN.md** — outline with canonical Claim Ledger, coverage index, section plan, and figure/table layout plan (from `/paper-plan`)
 2. **NARRATIVE_REPORT.md** — the research narrative (primary source of content)
 3. **Generated figures** — PDF/PNG files in `figures/` (from `/paper-figure`)
 4. **LaTeX includes** — `figures/latex_includes.tex` (from `/paper-figure`)
 5. **Bibliography** — existing `.bib` file, or will create one
 
-If no PAPER_PLAN.md exists, ask the user to run `/paper-plan` first or provide a brief outline.
+If `PAPER_PLAN.md` is absent, inspect existing LaTeX, PDFs, narrative/claim files, results,
+figures, tables, and the user's requested section. Proceed when those artifacts are
+sufficient; otherwise ask only for the smallest missing outline or evidence.
 
 ## Orchestra-Guided Writing Overlay
 
 Keep the existing `insleep` workflow, file layout, and defaults. Use the shared references below only when they improve writing quality:
 
 - Read `../shared-references/writing-principles.md` before drafting the Abstract, Introduction, Related Work, or when prose feels generic.
+- Read `../shared-references/section-blueprints.md` **mandatorily** before drafting or rewriting a claim-bearing Abstract, Introduction contribution list, Method/analysis section, or Conclusion.
 - Read `../shared-references/venue-checklists.md` during the final write-up and submission-readiness pass.
 - Read `../shared-references/citation-discipline.md` only when the built-in DBLP/CrossRef workflow is insufficient.
 
@@ -216,11 +233,11 @@ Before drafting the front matter, re-read the one-sentence contribution from `PA
 #### Section-Specific Guidelines
 
 **§0 Abstract:**
-- Use the 5-part flow from `../shared-references/writing-principles.md`: what, why hard, how, evidence, strongest result
+- Use the applicable semantic moves from `section-blueprints.md`; do not force a fixed sentence count
 - Must be self-contained (understandable without reading the paper)
 - Start with the paper's specific contribution, not generic field-level background
-- Include one concrete quantitative result
-- 150-250 words (check venue limit)
+- Use only the canonical comparator, evidence, and scope from the Claim Ledger
+- Obey the venue word limit; if unknown, target 150-200 words
 - No citations, no undefined acronyms
 - No `\begin{abstract}` — that's in main.tex
 
@@ -228,7 +245,7 @@ Before drafting the front matter, re-read the one-sentence contribution from `PA
 - Open with a compelling hook (1-2 sentences, problem motivation)
 - State the gap clearly ("However, ...")
 - Give a brief approach overview before the reader gets lost in details
-- List 2-4 specific, falsifiable contributions as a numbered or bulleted list
+- List 2-4 role-based, falsifiable contributions; map each to Claim IDs and evidence and do not force every bullet to begin with "We"
 - Preview the strongest result early instead of saving it for the experiments section
 - End with a brief roadmap ("The rest of this paper is organized as...")
 - Include the main result figure if space allows
@@ -245,6 +262,10 @@ Before drafting the front matter, re-read the one-sentence contribution from `PA
 
 **§3 Method / Preliminaries / Setup:**
 - Define notation early (reference math_commands.tex)
+- State the input/output contract, frozen or unchanged components, changed components, and end-to-end flow before module detail
+- For each module or argument use motivation → input/output → construction/equation → property/effect → hand-off
+- Disclose what is selected, trained, adapted, calibrated, or fixed and what target/reference/full-sequence access is required
+- Introduce each important equation with its purpose, define every symbol, and follow it with the direct effect and relevant boundary case
 - Use `\begin{definition}`, `\begin{theorem}` environments for formal statements
 - For theory papers: include proof sketches of key results in main body, full proofs in appendix
 - For theory papers: include a **comparison table** of prior bounds vs. this paper
@@ -260,9 +281,10 @@ Before drafting the front matter, re-read the one-sentence contribution from `PA
 - Target: 2.5-3 pages
 
 **§5 Conclusion:**
-- Summarize contributions (NOT copy-paste from intro — rephrase)
-- Limitations (be honest — reviewers appreciate this)
-- Future work (1-2 concrete directions)
+- Mirror the paper's claim order without copying the Introduction
+- Repeat only canonical evidence, comparators, protocols, and scope qualifiers
+- Introduce no new method, number, comparator, dataset, protocol, or claim
+- State limitations honestly; put Future Work in a separate paragraph derived from those limitations when space permits
 - Ethics statement and reproducibility statement (if venue requires)
 - Target: 0.5 pages
 
@@ -537,6 +559,8 @@ mcp__codex__codex:
     6. For theory papers: are proof sketches adequate?
     7. Are figures/tables clearly described and properly referenced?
     8. Would a skim reader understand the contribution from the title, abstract, introduction, and Figure 1?
+    9. Do Abstract, contribution bullets, body, evidence, and Conclusion mirror the Claim Ledger without comparator, number, protocol, or scope drift?
+    10. Does the Conclusion introduce any new claim or unsupported expansion?
 
     For each issue, specify: severity (CRITICAL/MAJOR/MINOR), location, and fix.
 
@@ -551,7 +575,7 @@ After drafting all sections:
 
 1. **Extract topic sentences** — pull the first sentence of every paragraph
 2. **Read them in sequence** — they should form a coherent narrative on their own
-3. **Check claim coverage** — every claim from the Claims-Evidence Matrix must appear
+3. **Check claim coverage** — every supported Claim ID from the canonical Claim Ledger must appear in its planned locations
 4. **Check evidence mapping** — every experiment/figure must support a stated claim
 5. **Fix gaps** — if a topic sentence doesn't advance the story, rewrite the paragraph
 
@@ -567,6 +591,9 @@ Before declaring done:
 - [ ] No TODO/FIXME/XXX markers left in the text
 - [ ] No `[VERIFY]` markers left unchecked
 - [ ] Abstract is self-contained (understandable without reading the paper)
+- [ ] Front-Matter Coverage Index is complete and matches the canonical Claim Ledger
+- [ ] Abstract and Conclusion use the same canonical comparator, headline evidence, protocol, and scope qualifiers
+- [ ] Conclusion introduces no new method, number, comparator, dataset, protocol, or claim
 - [ ] Title is specific and informative (not generic)
 - [ ] Related work is ≥1 full page
 - [ ] references.bib contains ONLY cited entries (no bloat)
@@ -581,7 +608,7 @@ Before declaring done:
 - **Do NOT generate author names, emails, or affiliations** — use anonymous block or placeholder
 - **Write complete sections, not outlines** — the output should be compilable LaTeX
 - **One file per section** — modular structure for easy editing
-- **Every claim must cite evidence** — cross-reference the Claims-Evidence Matrix
+- **Every claim must cite evidence** — cross-reference the Canonical Claim Ledger
 - **Compile-ready** — the output should compile with `latexmk` without errors (modulo missing figures)
 - **No over-claiming** — use hedging language ("suggests", "indicates") for weak evidence
 - **Venue style matters** — ML conferences (ICLR/NeurIPS/ICML) use `natbib` (`\citep`/`\citet`); **IEEE venues use `cite` package (`\cite{}`, numeric)**. Never mix.

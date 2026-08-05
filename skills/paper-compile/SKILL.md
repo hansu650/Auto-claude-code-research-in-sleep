@@ -1,61 +1,88 @@
 ---
 name: paper-compile
-description: "Compile LaTeX paper to PDF, fix errors, and verify output. Use when user says \"编译论文\", \"compile paper\", \"build PDF\", \"生成PDF\", or wants to compile LaTeX into a submission-ready PDF."
+description: "Compile, repair, format, and visually verify integrated LaTeX papers and PDFs. Use for building a PDF, fixing LaTeX errors or warnings, layout-only changes, typography, page limits, and integrated figure/table placement; common requests include 编译论文, 排版论文, build PDF, fix LaTeX, and move this figure or table. In a new or context-free folder, inspect local build instructions and sources first and request only missing blocking input."
 argument-hint: "[paper-directory]"
 allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob
 ---
 
 # Paper Compile: LaTeX to Submission-Ready PDF
 
+<!-- BEGIN ARIS NEUTRAL: COLD START -->
+## Cold-Start Behavior
+
+- Do not depend on prior chat history, a particular workspace, or unstated project context.
+- Inspect the current directory first for repository instructions, build scripts/configuration, LaTeX sources, existing PDFs/logs, figures, tables, and venue files.
+- If the available files establish the task and build contract, proceed from that evidence.
+- If a required input is missing, ask only for the minimum blocking information and still provide the safest useful scaffold or diagnosis available.
+- Never assume a specific paper, method, dataset, filename, venue, page number, figure number, or table number.
+<!-- END ARIS NEUTRAL: COLD START -->
+
 Compile the LaTeX paper and fix any issues: **$ARGUMENTS**
 
-## Constants
+## Build Contract and Precedence
 
-- **COMPILER = `latexmk`** — LaTeX build tool. Handles multi-pass compilation automatically.
-- **ENGINE = `pdflatex`** — LaTeX engine. Options: `pdflatex` (default), `xelatex` (for CJK/custom fonts), `lualatex`.
+Resolve how this repository is built before running a compiler. Apply this precedence exactly:
+
+1. The user's explicit instructions for this task.
+2. Applicable repository instruction files, including scoped `AGENTS.md`, `CLAUDE.md`, or equivalent files.
+3. Repository-owned build scripts and configuration such as `Makefile`, `latexmkrc`, CI workflows, or documented commands.
+4. The conservative fallbacks below, only for details that remain unresolved.
+
+Never replace a higher-precedence contract with a familiar local command. Record the resolved paper directory, main source, compiler/engine, command, output path, and venue limit before compiling.
+
+## Fallbacks
+
+- **COMPILER = `latexmk`** — fallback build orchestrator when the repository does not specify one.
+- **ENGINE = `pdflatex`** — fallback engine; use `xelatex` or `lualatex` only when the source, fonts, or repository contract requires it.
 - **MAX_COMPILE_ATTEMPTS = 3** — Maximum attempts to fix errors and recompile.
-- **PAPER_DIR = `paper/`** — Directory containing LaTeX source files.
+- **PAPER_DIR = `paper/`** — fallback source directory; otherwise use the discovered directory.
+- **MAIN_TEX = `main.tex`** — fallback entry point; otherwise use the target named by the build contract.
+- **OUTPUT_PDF = main source stem + `.pdf`** — fallback output; otherwise use the configured output path.
 - **MAX_PAGES** — Page limit. ML conferences: main body to Conclusion end (excluding references & appendix). ICLR=9, NeurIPS=9, ICML=8. **IEEE venues: references ARE included in page count.** IEEE journal ≈ 12-14 pages, IEEE conference ≈ 5-8 pages (all inclusive).
+
+## Mandatory Publication-Layout Gate
+
+Before changing or accepting figure/table placement, sizing, captions, or integrated page layout, read [`../shared-references/publication-layout-gates.md`](../shared-references/publication-layout-gates.md). Its integrated-page checks are mandatory. `paper-compile` owns this final page-level gate even when another skill created the standalone artifact.
 
 ## Workflow
 
-### Step 1: Verify Prerequisites
+### Step 0: Snapshot the Task and Existing Work
 
-Check that the compilation environment is ready:
+Before any edit or build:
 
-```bash
-# Check LaTeX installation
-which pdflatex && which latexmk && which bibtex
+1. Record the current directory, repository root, branch/commit when available, and the resolved build contract.
+2. If the directory is a Git worktree, capture `git status --short` and retain it as the baseline. Treat every pre-existing modification and untracked file as user-owned; never stage, restore, overwrite, or discard unrelated work.
+3. Record the source files, bibliography, figures/tables, existing PDF/log, and venue files that are in scope. If Git is unavailable, use a file inventory with sizes/timestamps and hashes for protected files.
+4. Record which repository instruction files and build scripts/configuration were consulted.
 
-# If not installed, provide instructions:
-# macOS: brew install --cask mactex-no-gui
-# Ubuntu: sudo apt-get install texlive-full
-# Server: conda install -c conda-forge texlive-core
-```
+For a **layout-only** request, establish a content-preservation gate before editing:
 
-Verify all required files exist:
+- Define the authorized files and allowed layout transformations.
+- Compute cryptographic hashes for files outside the authorized set that must remain byte-identical.
+- Preserve manuscript wording, numbers, citations, equations, labels, and experimental content unless the user explicitly expands the scope.
+- After editing, inspect the source diff manually, recheck protected hashes, and run a numeric/string audit over the affected manuscript scope.
+- State the exact extraction/comparison method and coverage. Never call an underspecified or spot-checked comparison deterministic.
+- If a layout fix appears to require rephrasing prose, stop and request authorization rather than silently changing it.
 
-```bash
-# Must exist
-ls $PAPER_DIR/main.tex
+### Step 1: Verify Prerequisites Portably
 
-# Should exist
-ls $PAPER_DIR/references.bib
-ls $PAPER_DIR/sections/*.tex
-ls $PAPER_DIR/figures/*.pdf 2>/dev/null || ls $PAPER_DIR/figures/*.png 2>/dev/null
-```
+Detect the host shell and use its native commands. Do not assume that Bash syntax works in PowerShell or that PowerShell syntax works in Bash.
+
+- Bash-like shells: use `command -v`, `test`, and shell-native path quoting.
+- PowerShell: use `Get-Command`, `Test-Path`, and `Get-ChildItem -LiteralPath`.
+- Prefer repository scripts when they exist; adapt diagnostic commands to the current shell without changing build semantics.
+
+Verify the resolved compiler/engine, main source, bibliography inputs, section inputs, and figure/table assets. If a required tool is missing, report it and give host-appropriate installation guidance; do not silently switch engines or build systems.
 
 ### Step 2: First Compilation Attempt
 
-```bash
-cd $PAPER_DIR
+Run the resolved repository command from the resolved paper directory. If no repository command exists, use the fallback equivalent of:
 
-# Clean previous build artifacts
-latexmk -C
-
-# Full compilation (pdflatex + bibtex + pdflatex × 2)
-latexmk -pdf -interaction=nonstopmode -halt-on-error main.tex 2>&1 | tee compile.log
+```text
+latexmk -pdf -interaction=nonstopmode -halt-on-error MAIN_TEX
 ```
+
+Use an incremental build first. **Do not run `latexmk -C` by default.** Clean only when stale generated artifacts are shown to cause the failure, record the reason, and verify that the clean target cannot remove source or user-authored assets. Capture output with host-native logging while preserving the compiler's real exit code.
 
 ### Step 3: Error Diagnosis and Auto-Fix
 
@@ -65,7 +92,10 @@ If compilation fails, read `compile.log` and fix common errors:
 ```
 ! LaTeX Error: File `somepackage.sty' not found.
 ```
-→ Install via `tlmgr install somepackage` or remove the `\usepackage` if unused.
+→ Follow the repository's selected TeX distribution and package policy. Use its package
+manager only when installation is authorized; otherwise report the missing package. Do
+not assume TeX Live/`tlmgr`, switch distributions, or remove a required package merely to
+make the build pass.
 
 **Undefined references:**
 ```
@@ -92,7 +122,7 @@ LaTeX Warning: Citation `smith2024' undefined
 ```
 Overfull \hbox (12.5pt too wide) in paragraph at lines 42--45
 ```
-→ Minor: usually ignorable. If severe (>20pt), rephrase the text or adjust figure width.
+→ Diagnose the rendered effect and source cause. Rephrase only when content edits are authorized; for layout-only work, preserve prose and use the repair ladder below or report the unresolved constraint.
 
 **BibTeX errors:**
 ```
@@ -102,6 +132,18 @@ I was expecting a `,' or a `}'---line 15 of references.bib
 
 **`\crefname` undefined for custom theorem types:**
 → Ensure `\crefname{assumption}{Assumption}{Assumptions}` and similar are in the preamble after `\newtheorem{assumption}`.
+
+**Float and layout repair ladder:** use the least invasive successful step, rebuild after each step, and stop once the constraint is satisfied.
+
+1. Confirm the actual problem in both the log and rendered page; check the float's width class against `\columnwidth` or `\textwidth` as required by the template.
+2. Correct a mismatched float environment, width, or asset bounding box without changing manuscript content.
+3. Adjust template-supported placement specifiers and keep the float near its first reference.
+4. Move the float source within the surrounding section when this preserves reading order and references.
+5. Improve the standalone table/figure geometry under the mandatory publication-layout gate; change caption wording only when explicitly authorized.
+6. Use a template-compatible float barrier only when section leakage is the demonstrated cause.
+7. Treat manual page breaks, forced placement, negative vertical spacing, and geometry overrides as last resorts requiring a stated reason and neighbor-page verification.
+
+Do not force a float to an exact page unless the user or venue explicitly requires that placement.
 
 ### Step 4: Iterative Fix Loop
 
@@ -124,27 +166,15 @@ For each error:
 
 ### Step 5: Post-Compilation Checks
 
-After successful compilation, verify the output:
+After successful compilation, verify that the resolved output PDF exists, is nonempty, opens successfully, and has the expected page count. Use host-native file inspection plus `pdfinfo` or an equivalent PDF inspector.
 
-```bash
-# Check PDF exists and has content
-ls -la main.pdf
-# Check page count
-pdfinfo main.pdf | grep Pages
+**Integrated visual review (mandatory):**
 
-# macOS: open for visual inspection
-# open main.pdf
-```
-
-**Visual review (automated):**
-If the compiled PDF exists, read it directly to check visual presentation:
-- Figure quality: readable labels, legible text, distinguishable colors
-- Layout: no orphaned section headers, no awkward page breaks
-- Figures appear near their first text reference (not pages away)
-- Tables: aligned columns, consistent decimal precision
-- No overfull content visibly extending past margins
-
-This is a quick visual scan, not a full review — the improvement loop does deeper visual review.
+1. Render every page and inspect an all-page thumbnail/contact sheet for global flow, blank or duplicated pages, float drift, inconsistent density, and reference placement.
+2. Render every changed page at readable resolution and inspect it in detail.
+3. Also inspect the immediate preceding and following page for each changed page; at document boundaries, inspect the one available neighbor.
+4. Check figure labels, table alignment and precision, caption fit, grayscale legibility, margins, headers/footers, section starts, orphaned headings, and visible overfull content.
+5. Rebuild and repeat this gate after every layout repair. A successful compiler exit alone is not layout verification.
 
 **Automated checks:**
 
@@ -154,13 +184,7 @@ This is a quick visual scan, not a full review — the improvement loop does dee
 - [ ] No "[?]" in the PDF (undefined citations — grep the log)
 - [ ] Figures are rendered (not missing image placeholders)
 
-```bash
-# Check for undefined references
-grep -c "LaTeX Warning.*undefined" compile.log
-
-# Check for missing citations
-grep -c "Citation.*undefined" compile.log
-```
+Search the resolved log with shell-native text search for undefined references, undefined citations, missing assets, and fatal errors. Preserve and report the actual compiler exit code.
 
 ### Step 6: Page Count Verification
 
@@ -170,24 +194,7 @@ grep -c "Citation.*undefined" compile.log
 
 **For IEEE venues:** The TOTAL page count (including references) must fit within the limit. There is no separate "main body" counting — everything up to and including the references counts.
 
-**Precise check using `pdftotext`:**
-```bash
-# Extract text and find where Conclusion ends vs References begin
-pdftotext main.pdf - | python3 -c "
-import sys
-text = sys.stdin.read()
-pages = text.split('\f')
-for i, page in enumerate(pages):
-    if 'Ethics Statement' in page or 'Reproducibility' in page:
-        print(f'Conclusion ends on page {i+1}')
-    if any(w in page for w in ['References', 'Bibliography']):
-        lines = [l for l in page.split('\n') if l.strip()]
-        for l in lines[:3]:
-            if 'References' in l or 'Bibliography' in l:
-                print(f'References start on page {i+1}')
-                break
-"
-```
+**Precise check:** use `pdftotext` or an equivalent extractor to preserve page boundaries, then locate the actual end of Conclusion and start of References/Bibliography. Run the extraction with host-native piping or temporary-file handling; do not assume a Bash pipeline. Confirm ambiguous headings against the rendered pages.
 
 If Conclusion ends mid-page and References start on the same page, the main body is that page number (e.g., if both are on page 9, main body = ~8.5 pages, which is fine for a 9-page limit since it leaves room for the References header).
 
@@ -198,19 +205,7 @@ If over limit:
 
 ### Step 6.5: Stale File Detection
 
-Check for orphaned section files not referenced by `main.tex`:
-
-```bash
-# Find all .tex files in sections/ and check which are \input'ed by main.tex
-for f in paper/sections/*.tex; do
-    base=$(basename "$f")
-    if ! grep -q "$base" paper/main.tex; then
-        echo "WARNING: $f is not referenced by main.tex — consider removing"
-    fi
-done
-```
-
-This prevents confusion from leftover files when section structure changes (e.g., old `5_conclusion.tex` left behind after restructuring to 7 sections).
+Enumerate `.tex` files with host-native file discovery and trace `\input`, `\include`, and repository-defined inclusion macros from the resolved main source. Report unreferenced files as candidates only. Do not delete or rewrite them automatically; they may be intentional alternates or pre-existing user work.
 
 ### Step 7: Submission Readiness
 
@@ -218,13 +213,14 @@ For conference submission, additional checks:
 
 - [ ] **Anonymous**: no author names, affiliations, or self-citations that reveal identity
 - [ ] **Page limit**: main body within MAX_PAGES (to end of Conclusion)
-- [ ] **Font embedding**: all fonts embedded in PDF
-  ```bash
-  pdffonts main.pdf | grep -v "yes"  # should return nothing (or only header)
-  ```
+- [ ] **Font embedding**: inspect the resolved PDF with `pdffonts` or an equivalent tool and confirm every required font is embedded
 - [ ] **No supplementary mixed in**: appendix clearly after `\newpage\appendix`
 - [ ] **File size**: reasonable (< 50MB for most venues, < 10MB preferred)
 - [ ] **No `[VERIFY]` markers**: search the PDF text for leftover markers
+
+### Step 7.5: Deliver the Verified Artifact
+
+The verified build output is the source of truth. If the final PDF is copied or renamed for delivery, compute a cryptographic hash (prefer SHA-256) for both the verified output and delivered file and require exact equality. A successful copy command or equal file size is not sufficient. Report both resolved paths and hashes; if they differ, do not present the delivered file as verified.
 
 ### Step 8: Output Summary
 
@@ -232,23 +228,29 @@ For conference submission, additional checks:
 ## Compilation Report
 
 - **Status**: SUCCESS / FAILED
-- **PDF**: paper/main.pdf
+- **Resolved build command**: [repository command or fallback]
+- **Verified PDF**: [resolved output path]
+- **Delivered PDF**: [same path or copied/renamed path]
+- **Verified/delivered SHA-256**: [hash] / [hash; must match]
 - **Pages**: X (main body to Conclusion) + Y (references) + Z (appendix)
 - **Within page limit**: YES/NO (MAX_PAGES = N)
 - **Errors fixed**: [list of auto-fixed issues]
 - **Warnings remaining**: [list of non-critical warnings]
 - **Undefined references**: 0
 - **Undefined citations**: 0
+- **Layout pages inspected**: all-page thumbnails + changed pages [list] + neighbors [list]
+- **Content-preservation audit**: NOT APPLICABLE / PASSED / FAILED [method and scope]
 
 ### Next Steps
-- [ ] Visual inspection of PDF
+- [ ] Review any explicitly reported visual or content-preservation exceptions
 - [ ] Run `/paper-write` to fix any content issues
 - [ ] Submit to [venue] via OpenReview / CMT / HotCRP
 ```
 
 ## Key Rules
 
-- **Never delete the user's source files** — only modify to fix errors
+- **Never delete the user's source files** — only modify authorized files to fix errors or requested layout
+- **Never rephrase manuscript text during layout-only work** — request explicit scope expansion first
 - **Keep compile.log** — useful for debugging
 - **Don't suppress warnings** — report them, let the user decide
 - **If LaTeX is not installed**, provide clear installation instructions rather than failing silently

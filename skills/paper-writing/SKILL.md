@@ -29,7 +29,7 @@ In this hybrid pack, the pipeline itself is unchanged, but `paper-plan` and `pap
 - **REVIEWER_MODEL = `gpt-5.6-sol`** — Model used via Codex MCP for plan review, figure review, writing review, and improvement loop.
 - **AUTO_PROCEED = true** — Auto-continue between phases. Set `false` to pause and wait for user approval after each phase.
 - **HUMAN_CHECKPOINT = false** — When `true`, the improvement loop (Phase 5) pauses after each round's review to let you see the score and provide custom modification instructions. When `false` (default), the loop runs fully autonomously. Passed through to `/auto-paper-improvement-loop`.
-- **ILLUSTRATION = `figurespec`** — Architecture/illustration generator for Phase 2b: `figurespec` (default, deterministic JSON→SVG via `/figure-spec`, best for architecture/workflow/topology), `gemini` (AI-generated via `/paper-illustration`, best for qualitative method illustrations; needs `GEMINI_API_KEY`), `codex-image2` (AI-generated via `/paper-illustration-image2` through the local Codex native image bridge — no external API key, uses your ChatGPT Plus/Pro quota; experimental), `mermaid` (Mermaid syntax via `/mermaid-diagram`, free, best for flowcharts), or `false` (skip Phase 2b, manual only).
+- **ILLUSTRATION = `figurespec`** — Preferred backend requested through `paper-figure` in Phase 2b: `figurespec` (default, deterministic editable vector output), `gemini` (qualitative method illustrations; needs `GEMINI_API_KEY`), `codex-image2` (Codex native image bridge; no external API key; experimental), `mermaid` (lightweight flowcharts), or `false` (manual creation followed by the same standalone gate).
 
 > Override inline: `/paper-writing "NARRATIVE_REPORT.md" — venue: NeurIPS, illustration: gemini, human checkpoint: true`
 > IEEE example: `/paper-writing "NARRATIVE_REPORT.md" — venue: IEEE_JOURNAL`
@@ -40,9 +40,21 @@ This pipeline accepts one of:
 
 1. **`NARRATIVE_REPORT.md`** (best) — structured research narrative with claims, experiments, results, figures
 2. **Research direction + experiment results** — the skill will help draft the narrative first
-3. **Existing `PAPER_PLAN.md`** — skip Phase 1, start from **Phase 1.5** (the contract negotiation still runs; only resuming a genuine pre-1.5 legacy run may skip it, and then Phase 6.0's row 0 records "no contract")
+3. **Existing `PAPER_PLAN.md`** — skip Phase 1 only after the compatibility gate below passes, then start from **Phase 1.5** (the contract negotiation still runs; only resuming a genuine pre-1.5 legacy run may skip it, and then Phase 6.0's row 0 records "no contract")
 
 The more detailed the input (especially figure descriptions and quantitative results), the better the output.
+
+**Existing-plan compatibility gate:** inspect the file rather than trusting its name.
+Before skipping Phase 1, verify these exact canonical column structures:
+
+1. `## Canonical Claim Ledger` — `Claim ID | Role | Exact claim | Comparator or N/A | Evidence (experiment/table/figure/theorem/proof) | Scope/data access | Selection/training/adaptation or N/A | Limitation | Forbidden expansion`
+2. `## Front-Matter Coverage Index` — `Claim ID | Abstract move | Intro bullet | Body subsection | Evidence location | Conclusion sentence`
+3. `## Figure/Table Layout Contract` — `Label | Kind | Width class | Preferred placement | Must preserve | Caption budget | Priority`
+
+All three need usable rows and consistent IDs or semantic labels. If any contract is
+absent or uses a legacy schema, migrate the grounded content with `/paper-plan`
+before Phase 1.5. Never keep both old and new claim stores, and never infer missing
+entries from prior chat.
 
 ## Optional: Style reference (`— style-ref: <source>`, opt-in)
 
@@ -83,7 +95,7 @@ esac
 Then forward `— style-ref: <source>` only to the **writer-side** sub-skills:
 - `/paper-plan` (Phase 1) — outline structure
 - `/paper-write` (Phase 3) — section-by-section prose
-- `/paper-illustration` (Phase 2b) — figure structural matching, optional
+  - `/paper-figure` (Phase 2b) — route illustration generation and validate the returned artifact, optional
 
 Sources accepted: local TeX dir / file, local PDF, arXiv id, http(s) URL. Overleaf URLs/IDs are rejected — clone via `/overleaf-sync setup <id>` first and pass the local clone path.
 
@@ -152,13 +164,15 @@ If `— style-ref: <source>` was passed in `$ARGUMENTS` and the helper succeeded
 
 **What this does:**
 - Parse NARRATIVE_REPORT.md for claims, evidence, and figure descriptions
-- Build a **Claims-Evidence Matrix** — every claim maps to evidence, every experiment supports a claim
+- Build one **Canonical Claim Ledger** — every claim maps to evidence, every experiment supports a claim, and no duplicate claim store is retained
+- Build a **Front-Matter Coverage Index** for Abstract, Introduction contributions, and Conclusion mirroring
 - Design section structure (5-8 sections depending on paper type)
-- Plan figure/table placement with data sources
+- Build the **Figure/Table Layout Contract** with semantic labels, width classes, placement, preservation requirements, caption budgets, and priorities
 - Scaffold citation structure
 - GPT-5.6-Sol reviews the plan for completeness
 
-**Output:** `PAPER_PLAN.md` with section plan, figure plan, citation scaffolding.
+**Output:** `PAPER_PLAN.md` with the canonical ledger, coverage index, section plan,
+Figure/Table Layout Contract, and citation scaffolding.
 
 **Checkpoint:** Present the plan summary to the user.
 
@@ -256,7 +270,7 @@ Invoke `/paper-figure` to generate data-driven plots and tables:
 ```
 
 **What this does:**
-- Read figure plan from PAPER_PLAN.md
+- Read the Figure/Table Layout Contract from PAPER_PLAN.md
 - Generate matplotlib/seaborn plots from JSON/CSV data
 - Generate LaTeX comparison tables
 - Create `figures/latex_includes.tex` for easy insertion
@@ -264,54 +278,60 @@ Invoke `/paper-figure` to generate data-driven plots and tables:
 
 **Output:** `figures/` directory with PDFs, generation scripts, and LaTeX snippets.
 
-> **Scope:** `paper-figure` covers data plots and comparison tables. Architecture diagrams, pipeline figures, and method illustrations are handled in Phase 2b below.
+> **Scope:** `paper-figure` owns every standalone publication artifact gate. Phase 2 creates data plots and tables; Phase 2b asks the same owner to route architecture, pipeline, and illustrative objects to the selected backend and then validate what comes back.
 
 #### Phase 2b: Architecture & Illustration Generation
 
-**Skip this step entirely if `illustration: false`.**
+`illustration: false` or `manual` skips generation only, never validation.
+For every supplied or planned manual artifact, call the same owner with
+`diagram-backend: manual`; a missing artifact blocks only that semantic label.
 
-If the paper plan includes architecture diagrams, pipeline figures, audit cascades, or method illustrations, invoke the appropriate generator based on the `illustration` parameter:
+If the plan includes architecture diagrams, pipeline figures, audit cascades, or method
+illustrations, `paper-figure` remains the owner. Invoke it once for each pending
+semantic label, pass the requested `illustration` backend, and let it delegate to
+the specialized generator. The returned artifact must come back through
+`paper-figure`'s mandatory standalone artifact gate. Do not invoke a backend
+directly from this orchestrator, and do not regenerate a label already completed in
+Phase 2.
 
-**When `illustration: figurespec`** (default) — invoke `/figure-spec`:
+Use this owner call for every backend:
+
 ```
-/figure-spec "[architecture/workflow description from PAPER_PLAN.md]"
+/paper-figure "PAPER_PLAN.md — target: <semantic label> — diagram-backend: <figurespec|drawio|gemini|mermaid|codex-image2|manual>"
 ```
+
+**When `illustration: figurespec`** (default):
 - Deterministic JSON → SVG vector rendering (editable, reproducible)
 - Best for: system architecture, workflow pipelines, audit cascades, layered topology
 - Output: `figures/*.svg` + `figures/*.pdf` (via rsvg-convert) + `figures/specs/*.json`
 - No external API, runs fully local
 
-If `— style-ref: <source>` was passed and the helper succeeded above, append `— style-ref: <source>` to the invocation below as well.
+If `— style-ref: <source>` was passed and the helper succeeded above, append it to the owner call.
 
-**When `illustration: gemini`** — invoke `/paper-illustration`:
-```
-/paper-illustration "[method description from PAPER_PLAN.md or NARRATIVE_REPORT.md]"
-```
+**When `illustration: gemini`**:
 - Claude plans → Gemini optimizes → Nano Banana Pro renders → Claude reviews (score ≥ 9)
 - Best for: qualitative method illustrations, natural-style diagrams, result grids
 - Output: `figures/ai_generated/*.png`
 - Requires `GEMINI_API_KEY` environment variable
 
-**When `illustration: mermaid`** — invoke `/mermaid-diagram`:
-```
-/mermaid-diagram "[method description from PAPER_PLAN.md]"
-```
+**When `illustration: mermaid`**:
 - Generates Mermaid syntax diagrams (flowchart, sequence, class, state, etc.)
 - Best for: lightweight flowcharts, state machines, simple sequence diagrams
 - Output: `figures/*.mmd` + `figures/*.png`
 - Free, no API key needed
 
-**When `illustration: codex-image2`** — invoke `/paper-illustration-image2`:
-```
-/paper-illustration-image2 "[method description from PAPER_PLAN.md or NARRATIVE_REPORT.md]"
-```
+**When `illustration: codex-image2`**:
 - Claude plans → Codex native image generation renders → Claude reviews (same multi-stage workflow as `gemini`, different renderer)
 - Best for: users who want a GPT-image-style renderer without needing `GEMINI_API_KEY`; uses your existing Codex / ChatGPT Plus/Pro quota
-- Output: `figures/ai_generated/figure_final.png` + `latex_include.tex` + `review_log.json` (emitted via the `/paper-illustration-image2` SKILL's `finalize` step, which delegates to the canonical `paper_illustration_image2.py` helper resolved per [integration-contract §2](../shared-references/integration-contract.md#2-canonical-helper--one-implementation-not-copy-pasted))
-- **Prerequisites** (beyond ARIS's standard Claude Code + Codex coexistence): the local Codex app-server must be signed in (`codex debug app-server send-message-v2 "ping"` succeeds), and the dedicated MCP bridge must be registered — see `mcp-servers/codex-image2/README.md` for the one-time `claude mcp add` command. Delegate the preflight to `/paper-illustration-image2` (which resolves the helper via the canonical chain), or invoke the helper directly via the shim at `tools/paper_illustration_image2.py preflight --workspace .` to confirm before relying on this path.
+- Output: `figures/ai_generated/figure_final.png` + `latex_include.tex` + `review_log.json` from the delegated backend
+- **Prerequisites** (beyond ARIS's standard Claude Code + Codex coexistence): the local Codex app-server must be signed in and the dedicated MCP bridge must be registered. Let `paper-figure` delegate the backend preflight; this orchestrator must not bypass the owner.
 - **Experimental**: this renderer shells through the Codex debug app-server, which Codex documents as an unstable surface. Prefer `figurespec` or `gemini` for production submission flows until `codex-image2` stabilizes.
 
-**When `illustration: false`** — skip entirely. All non-data figures must be created manually (draw.io, Figma, TikZ) and placed in `figures/` before Phase 3.
+**When `illustration: false` or `manual`** — skip generation only.
+For every required non-data label, require the supplied editable/rendered artifact and
+route it through `/paper-figure "... — diagram-backend: manual"`. It must pass
+the same standalone artifact gate before Phase 3; if it is missing, pause only that
+label and request the smallest missing source.
 
 **Choosing the right mode:**
 - Formal architecture / workflow / topology figures → `figurespec` (default)
@@ -320,7 +340,9 @@ If `— style-ref: <source>` was passed and the helper succeeded above, append `
 - Quick flowchart / state machine → `mermaid`
 - Full manual control → `false`
 
-These are complementary, not mutually exclusive: you can run multiple generators for different figures in the same paper by re-invoking with different `illustration` overrides.
+These backends are complementary. Route different semantic labels through different
+backends when useful, but complete the standalone gate exactly once for each final
+artifact.
 
 **Checkpoint:** List generated vs manual figures.
 
@@ -599,6 +621,21 @@ not silently skip the default-ON gate):
 - Zero-weight AIS style impressions: FYI only — may feed
   `/auto-paper-improvement-loop` context, never gate.
 
+### Phase 5.95: Final Integrated-Page Gate (MANDATORY)
+
+The improvement loop's internal recompilation is not a layout acceptance test. After
+the last mutation from Phase 5 or any later audit repair, invoke:
+
+```
+/paper-compile "paper/ — final integrated-page validation"
+```
+
+Require the final PDF to pass the integrated-page gate from
+`publication-layout-gates.md`: inspect every final figure and table at embedded
+size, its full target page, both neighboring pages, and all-page thumbnails for global
+reflow. If this pass changes LaTeX or an artifact, rebuild and repeat the same gate.
+Do not enter Phase 6 until it passes. Any later mutation must return here.
+
 ### Phase 6: Final Report
 
 **Phase 6.0 — Submission Gate**
@@ -808,6 +845,7 @@ or directly if `assurance=draft`)
 | 3. LaTeX Writing | ✅ | paper/sections/*.tex ([N] sections, [M] citations) |
 | 4. Compilation | ✅ | paper/main.pdf ([X] pages) |
 | 5. Improvement | ✅ | [score0]/10 → [score2]/10 |
+| 5.95 Final integrated-page gate | PASS | final objects + target/neighbor pages + all-page thumbnails |
 | 4.5 Proof Audit | [PASS\|WARN\|FAIL\|NOT_APPLICABLE\|BLOCKED\|ERROR] | PROOF_AUDIT.{md,json} |
 | 5.5 Paper Claim Audit | [PASS\|WARN\|FAIL\|NOT_APPLICABLE\|BLOCKED\|ERROR] | PAPER_CLAIM_AUDIT.{md,json} |
 | 5.8 Citation Audit | [PASS\|WARN\|FAIL\|NOT_APPLICABLE\|BLOCKED\|ERROR] | CITATION_AUDIT.{md,json} |
@@ -835,8 +873,8 @@ or directly if `assurance=draft`)
 - [items from final review that weren't addressed]
 
 ## Next Steps
-- [ ] Visual inspection of PDF
-- [ ] Add any missing manual figures
+- [ ] Optional author preference review (the mandatory integrated visual gate already passed)
+- [ ] Archive editable figure/table sources and generation scripts
 - [ ] Submit to [venue] via OpenReview / CMT / HotCRP
 ```
 
@@ -852,7 +890,7 @@ or directly if `assurance=draft`)
 - **Large file handling**: If the Write tool fails due to file size, immediately retry using Bash (`cat << 'EOF' > file`) to write in chunks. Do NOT ask the user for permission — just do it silently.
 - **Don't skip phases.** Each phase builds on the previous one — skipping leads to errors.
 - **Checkpoint between phases** when AUTO_PROCEED=false. Present results and wait for approval.
-- **Manual figures first.** If the paper needs architecture diagrams or qualitative results, the user must provide them before Phase 3.
+- **All required artifacts first.** Auto-generated and manual figures/tables must exist and pass `paper-figure`'s standalone artifact gate before Phase 3.
 - **Compilation must succeed** before entering the improvement loop. Fix all errors first.
 - **Preserve all PDFs.** The user needs round0/round1/round2 for comparison.
 - **Document everything.** The pipeline report should be self-contained.

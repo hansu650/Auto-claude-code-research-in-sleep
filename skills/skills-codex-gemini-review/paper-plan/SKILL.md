@@ -1,6 +1,6 @@
 ---
 name: "paper-plan"
-description: "Generate a structured paper outline from review conclusions and experiment results. Use when user says \"写大纲\", \"paper outline\", \"plan the paper\", \"论文规划\", or wants to create a paper plan before writing."
+description: "Plan and structure a research paper from available project evidence. Use for paper outlines, claim-to-section plans, Abstract plans, Introduction contribution plans, Method organization, Conclusion plans, and figure/table plans; common requests include 写大纲, 论文规划, paper outline, and plan the paper. In a new or context-free folder, inspect local artifacts first and request only missing blocking input."
 ---
 
 > Override for Codex users who want **Gemini**, not a second Codex agent, to act as the reviewer. Install this package **after** `skills/skills-codex/*`.
@@ -10,6 +10,20 @@ description: "Generate a structured paper outline from review conclusions and ex
 > **Gemini overlay assurance:** `review_independence: cross-family` and `acceptance_status: accepted`.
 
 Generate a structured, section-by-section paper outline from: **$ARGUMENTS**
+
+<!-- BEGIN ARIS NEUTRAL: COLD START -->
+## Cold-start behavior
+
+- Do not require prior conversation or a particular workspace. Treat the current request and discovered project artifacts as the source of truth.
+- Inspect the current directory and any user-named paths first for relevant repository instructions, paper sources and PDFs, plans, claims, results, data, figures, tables, bibliography, and build files.
+- If the request and discovered artifacts are sufficient, proceed without asking the user to repeat context.
+- If required information is missing, ask only for the smallest blocking input. When safe, still provide the best useful scaffold, partial artifact, or diagnostic supported by the available evidence.
+- Stay project-neutral: do not assume any paper, method, dataset, metric, filename, numbering, venue, build tool, or result that is not stated or discovered.
+<!-- END ARIS NEUTRAL: COLD START -->
+
+The constants and paths below are planning fallbacks, not facts about an existing
+project. Do not impose them when the request or discovered artifacts establish a venue,
+page rule, structure, or file layout.
 
 ## Constants
 
@@ -26,7 +40,16 @@ The skill expects one or more of these in the project directory:
 3. **Experiment results** — JSON files in `figures/`, screen logs, tables
 4. **idea-stage/IDEA_REPORT.md** — from idea-discovery pipeline (if applicable) *(fall back to `./IDEA_REPORT.md` if not found)*
 
-If none exist, ask the user to describe the paper's contribution in 3-5 sentences.
+Only after inspecting the current directory and user-named paths, if no usable evidence
+or source material exists, ask for the smallest missing description needed to build a
+defensible outline.
+
+## Orchestra-Guided Writing Overlay
+
+- Read `../shared-references/writing-principles.md` when framing prose or narrative.
+- Read `../shared-references/section-blueprints.md` **mandatorily** when planning a claim-bearing Abstract, Introduction contribution list, Method/analysis section, or Conclusion. Its Claim Ledger and mirror contract supersede rigid sentence templates.
+- Read `../shared-references/publication-layout-gates.md` **mandatorily** when planning any figure or table.
+- Read `../shared-references/venue-checklists.md` before freezing a venue-specific outline.
 
 ## Workflow
 
@@ -39,14 +62,17 @@ Read all available narrative documents and extract:
 3. **Known weaknesses** (from reviewer feedback)
 4. **Suggested framing** (from review conclusions)
 
-Build a **Claims-Evidence Matrix**:
+Extend the existing matrix into one canonical **Claim Ledger**. Do not create a second
+claim store:
 
 ```markdown
-| Claim | Evidence | Status | Section |
-|-------|----------|--------|---------|
-| [claim 1] | [exp A, metric B] | Supported | §3.2 |
-| [claim 2] | [exp C] | Partially supported | §4.1 |
+| Claim ID | Role | Exact claim | Comparator or N/A | Evidence (experiment/table/figure/theorem/proof) | Scope/data access | Selection/training/adaptation or N/A | Limitation | Forbidden expansion |
+|---|---|---|---|---|---|---|---|---|
+| C1 | formulation | ... | ... | ... | ... | ... | ... | ... |
 ```
+
+Apply every disclosure distinction in `section-blueprints.md`; use `N/A` rather than
+inventing a method-paper field for another paper type.
 
 ### Step 2: Determine Paper Type and Structure
 
@@ -98,18 +124,17 @@ For each section, specify:
 
 ```markdown
 ### §0 Abstract
-- **One-sentence problem**: [what gap this paper addresses]
-- **Approach**: [what we do, in one sentence]
-- **Key result**: [most compelling quantitative finding]
-- **Implication**: [why it matters]
-- **Estimated length**: 150-250 words
+- **Semantic moves**: [applicable setting, gap, reframing, method/analysis, component roles, evidence/scope, takeaway from `section-blueprints.md`]
+- **Canonical claims**: [Claim IDs represented]
+- **Headline evidence**: [canonical comparator/result/scope, if applicable]
+- **Estimated length**: [venue limit; otherwise 150-200 words]
 - **Self-contained check**: can a reader understand this without the paper?
 
 ### §1 Introduction
 - **Opening hook**: [1-2 sentences that motivate the problem]
 - **Gap**: [what's missing in prior work]
 - **Key questions**: [the research questions this paper answers]
-- **Contributions**: [numbered list, matching Claims-Evidence Matrix]
+- **Contributions**: [2-4 role-based bullets, specific and falsifiable, each mapped to Claim IDs and evidence]
 - **Hero figure**: [describe what Figure 1 should show — MUST include clear comparison if applicable]
 - **Estimated length**: 1.5 pages
 - **Key citations**: [3-5 papers to cite here]
@@ -121,9 +146,11 @@ For each section, specify:
 - **Must NOT be just a list** — synthesize, compare, and position
 
 ### §3 Method / Setup / Preliminaries
-- **Notation**: [key symbols and their meanings]
-- **Problem formulation**: [formal setup]
-- **Method description**: [algorithm, model, or experimental design]
+- **Overview contract**: [input/output, frozen or unchanged parts, changed parts, end-to-end flow]
+- **Representation/interface**: [objects handed to and from the method or analysis]
+- **Modules/arguments**: [motivation → input/output → construction/equation → property/effect → hand-off]
+- **Composition and access**: [selected/trained/adapted/fixed behavior plus online/offline/reference/full-sequence access]
+- **Boundary cases**: [behavior required for reproduction]
 - **Formal statements**: [theorems, propositions if applicable]
 - **Proof sketch locations**: [which key steps appear here vs. appendix]
 - **Estimated length**: 1.5-2 pages
@@ -136,9 +163,9 @@ For each section, specify:
 - **Data source**: [which JSON files / experiment results]
 
 ### §5 Conclusion
-- **Restatement**: [contributions rephrased, not copy-pasted from intro]
-- **Limitations**: [honest assessment — reviewers value this]
-- **Future work**: [1-2 concrete directions]
+- **Claim-order mirror**: [problem/reframing → method/analysis → evidence → scope/limitations]
+- **No-new-claim check**: [no new method, number, comparator, dataset, protocol, or claim]
+- **Future Work**: [separate paragraph derived from a stated limitation, when space permits]
 - **Estimated length**: 0.5 pages
 ```
 
@@ -147,16 +174,17 @@ For each section, specify:
 List every figure and table:
 
 ```markdown
-## Figure Plan
+## Figure/Table Layout Contract
 
-| ID | Type | Description | Data Source | Priority |
-|----|------|-------------|-------------|----------|
-| Fig 1 | Hero/Architecture | System overview + comparison | manual | HIGH |
-| Fig 2 | Line plot | Training curves comparison | figures/exp_A.json | HIGH |
-| Fig 3 | Bar chart | Ablation results | figures/ablation.json | MEDIUM |
-| Table 1 | Comparison table | Main results vs. baselines | figures/main_results.json | HIGH |
-| Table 2 | Theory comparison | Prior bounds vs. ours | manual | HIGH (theory papers) |
+| Label | Kind | Width class | Preferred placement | Must preserve | Caption budget | Priority |
+|---|---|---|---|---|---|---|
+| fig:overview | figure* | double column | near first discussion | readable overview at final size | 2-3 lines | primary |
+| tab:primary | table | single column | before secondary diagnostics | metric, protocol, grouping, units | 1-2 lines | primary |
 ```
+
+Add the data source and intended claim/evidence link beneath each row. Caption budgets
+are advisory and may not remove information required for self-contained interpretation.
+Use exact-page placement only when the venue or user requires it.
 
 **CRITICAL for Figure 1 / Hero Figure**: Describe in detail what the figure should contain, including:
 - Which methods are being compared
@@ -188,7 +216,7 @@ Send the complete outline to Gemini review for feedback:
 mcp__gemini-review__review_start:
   prompt: |
     Review this paper outline for a [VENUE] submission.
-    [full outline including Claims-Evidence Matrix]
+    [full outline including Canonical Claim Ledger and Front-Matter Coverage Index]
 
     Score 1-10 on:
     1. Logical flow — does the story build naturally?
@@ -196,6 +224,8 @@ mcp__gemini-review__review_start:
     3. Missing experiments or analysis
     4. Positioning relative to prior work
     5. Page budget feasibility (MAX_PAGES = main body to Conclusion end, excluding refs/appendix)
+    6. Claim mirroring — do Abstract, contribution bullets, body, evidence, and Conclusion preserve the same comparator, result, protocol, and scope?
+    7. Publication layout — does every figure/table have a width, placement, preservation, caption, and priority contract?
 
     For each weakness, suggest the MINIMUM fix.
     Be specific and actionable — "add X" not "consider more experiments".
@@ -219,14 +249,19 @@ Save the final outline to `PAPER_PLAN.md` in the project root:
 **Page budget**: [MAX_PAGES] pages (main body to Conclusion end, excluding references & appendix)
 **Section count**: [N] (must match the number of section files that will be created)
 
-## Claims-Evidence Matrix
+## Canonical Claim Ledger
 [from Step 1]
+
+## Front-Matter Coverage Index
+| Claim ID | Abstract move | Intro bullet | Body subsection | Evidence location | Conclusion sentence |
+|---|---|---|---|---|---|
+[Claim IDs and locations only; do not duplicate claim text or evidence]
 
 ## Structure
 [from Step 2-3, section by section]
 
-## Figure Plan
-[from Step 4, with detailed hero figure description]
+## Figure/Table Layout Contract
+[from Step 4, with detailed hero figure description and canonical contract columns]
 
 ## Citation Plan
 [from Step 5]
@@ -256,7 +291,7 @@ Save the final outline to `PAPER_PLAN.md` in the project root:
 - **Page budget is hard** — if content exceeds MAX_PAGES, suggest what to move to appendix
 - **MAX_PAGES counts main body only** — from first page to end of Conclusion. References and appendix are NOT counted.
 - **Venue-specific norms** — all three venues (ICLR/NeurIPS/ICML) use `natbib` (`\citep`/`\citet`)
-- **Claims-Evidence Matrix is the backbone** — every claim must map to evidence, every experiment must support a claim
+- **The Canonical Claim Ledger is the backbone** — every claim must map to evidence, every experiment must support a claim, and no duplicate claim store may drift from it
 - **Figures need detailed descriptions** — especially the hero figure, which must clearly specify comparisons and visual expectations
 - **Section count is flexible** — 5-8 sections depending on paper type. Don't force content into a rigid 5-section template.
 

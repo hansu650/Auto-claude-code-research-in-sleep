@@ -69,9 +69,63 @@ fi
   exit 1
 }
 
-python3 "$FIGURE_RENDERER" render <spec.json> --output <out.svg>
-python3 "$FIGURE_RENDERER" validate <spec.json>
-python3 "$FIGURE_RENDERER" schema
+# Resolve the interpreter; this Windows-facing Codex workflow must not assume
+# that `python3` exists (many Windows installations expose only `python`).
+PYTHON_CMD="$(command -v python3 2>/dev/null || command -v python 2>/dev/null || true)"
+[ -n "$PYTHON_CMD" ] || {
+  echo "ERROR: neither python3 nor python is available." >&2
+  exit 1
+}
+
+"$PYTHON_CMD" "$FIGURE_RENDERER" render <spec.json> --output <out.svg>
+"$PYTHON_CMD" "$FIGURE_RENDERER" validate <spec.json>
+"$PYTHON_CMD" "$FIGURE_RENDERER" schema
+```
+
+On PowerShell, use the host-native equivalent:
+
+```powershell
+$RendererCandidates = @()
+if ($env:ARIS_REPO) {
+  $RendererCandidates += Join-Path $env:ARIS_REPO "skills\figure-spec\scripts\figure_renderer.py"
+  $RendererCandidates += Join-Path $env:ARIS_REPO "tools\figure_renderer.py"
+}
+$RendererCandidates += Join-Path (Get-Location).Path "tools\figure_renderer.py"
+if ($env:USERPROFILE) {
+  $RendererCandidates += Join-Path $env:USERPROFILE ".codex\skills\figure-spec\scripts\figure_renderer.py"
+  $RendererCandidates += Join-Path $env:USERPROFILE ".codex\skills\figure-spec\figure_renderer.py"
+}
+$FigureRenderer = $RendererCandidates |
+  Where-Object { $_ -and (Test-Path -LiteralPath $_ -PathType Leaf) } |
+  Select-Object -First 1
+if (-not $FigureRenderer) {
+  throw "figure_renderer.py was not found in the ARIS repo, project tools, or Codex skill install."
+}
+
+$PythonCmd = (Get-Command python3, python -ErrorAction SilentlyContinue |
+  Select-Object -First 1).Source
+if (-not $PythonCmd) { throw "Neither python3 nor python is available." }
+
+$SpecPath = "<spec.json>"
+$OutputSvg = "<out.svg>"
+$PriorPythonIoEncoding = $env:PYTHONIOENCODING
+try {
+  # The legacy tools/ shim starts a child interpreter on Windows, so use an
+  # inherited UTF-8 setting as well as -X utf8 for the direct-script route.
+  $env:PYTHONIOENCODING = "utf-8"
+  & $PythonCmd -X utf8 $FigureRenderer validate $SpecPath
+  if ($LASTEXITCODE -ne 0) { throw "FigureSpec validation failed." }
+  & $PythonCmd -X utf8 $FigureRenderer render $SpecPath --output $OutputSvg
+  if ($LASTEXITCODE -ne 0) { throw "FigureSpec rendering failed." }
+  & $PythonCmd -X utf8 $FigureRenderer schema
+  if ($LASTEXITCODE -ne 0) { throw "FigureSpec schema export failed." }
+} finally {
+  if ($null -eq $PriorPythonIoEncoding) {
+    Remove-Item Env:PYTHONIOENCODING -ErrorAction SilentlyContinue
+  } else {
+    $env:PYTHONIOENCODING = $PriorPythonIoEncoding
+  }
+}
 ```
 
 ## Workflow
@@ -133,10 +187,10 @@ Start from a template based on the diagram type:
 
 ```bash
 # Validate first
-python3 "$FIGURE_RENDERER" validate /tmp/spec.json
+"$PYTHON_CMD" "$FIGURE_RENDERER" validate /tmp/spec.json
 
 # Render to SVG
-python3 "$FIGURE_RENDERER" render /tmp/spec.json --output figures/fig_arch.svg
+"$PYTHON_CMD" "$FIGURE_RENDERER" render /tmp/spec.json --output figures/fig_arch.svg
 
 # Convert to PDF for LaTeX inclusion
 rsvg-convert -f pdf figures/fig_arch.svg -o figures/fig_arch.pdf
@@ -181,7 +235,8 @@ Iterate until all three axes ≥ 7/10. The ARIS tech report figures went through
 
 ## Schema Quick Reference
 
-Run `python3 "$FIGURE_RENDERER" schema` for the authoritative schema.
+Run `"$PYTHON_CMD" "$FIGURE_RENDERER" schema` for the authoritative schema
+(or the PowerShell call-operator equivalent above).
 
 ### Nodes
 

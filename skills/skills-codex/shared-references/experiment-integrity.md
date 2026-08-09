@@ -44,6 +44,10 @@
 
 ## Who Checks
 
-The **reviewer model** (different family from executor) performs integrity checks via `/experiment-audit`. The executor collects file paths; the reviewer reads code and results directly.
+The reviewer performs integrity checks via `/experiment-audit`. The executor
+collects file paths; the reviewer reads code and results directly. A fresh
+same-family reviewer is useful but records only `acceptance_status:
+provisional`. Only a cross-family reviewer or a deterministic verifier may
+record `acceptance_status: accepted`.
 
 **Never let the executor judge its own experiment integrity.**

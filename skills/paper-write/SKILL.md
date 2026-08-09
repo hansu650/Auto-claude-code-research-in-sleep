@@ -19,6 +19,15 @@ Draft a LaTeX paper based on: **$ARGUMENTS**
 - Stay project-neutral: do not assume any paper, method, dataset, metric, filename, numbering, venue, build tool, or result that is not stated or discovered.
 <!-- END ARIS NEUTRAL: COLD START -->
 
+## Respect User-Approved Text Locks
+
+If the user or project designates a section lock/hash manifest, treat the
+listed prose as read-only unless the current request explicitly authorizes a
+content change. Before changing locked prose, present the proposed old/new
+text or a focused diff for approval. After approval, update the lock only after
+the revised text is verified, and record why the lock changed. Never refresh a
+lock simply to conceal an accidental rewrite.
+
 The constants and template paths below are full-draft initialization fallbacks, not facts
 about an existing manuscript. Do not apply them to a section-only rewrite or when local
 files establish another venue, anonymity setting, page rule, or directory layout.

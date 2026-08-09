@@ -311,7 +311,7 @@ pdflatex -interaction=nonstopmode <file>.tex 2>&1 | grep -E "Error|Warning|undef
 
 ### Phase 3: Re-Review (Codex GPT-5.6-Sol ultra)
 
-Launch a fresh reviewer agent for the next review round. Do not use `send_input` here; proof-checker keeps each round independent. Request the same mandatory checklist.
+Launch a fresh reviewer agent for the next review round. Do not use `followup_task` here; proof-checker keeps each round independent. Request the same mandatory checklist.
 
 Check acceptance gate. If not met, repeat Phases 2-3 (up to MAX_REVIEW_ROUNDS).
 
@@ -439,7 +439,7 @@ python3 "$WIKI_SCRIPT" add_claim research-wiki/ --slug "<stable-theorem-id>" \
 - **Codex executor analyzes and implements; a fresh Codex reviewer provides adversarial review.** Base review remains same-family/provisional.
 - **Codex reasoning always ultra** (deep-audit tier): never below `xhigh` — only the capability fallback in `reviewer-routing.md` may step down, and only on explicit capability errors.
 - **Send full content**: Don't summarize — send actual math for line-by-line checking.
-- **Fresh reviewer agents**: Save each returned `agent_id` for traceability, but launch a new `spawn_agent` for each review round. Do not use `send_input` across proof-checker rounds.
+- **Fresh reviewer agents**: Save each returned `agent_id` for traceability, but launch a new `spawn_agent` for each review round. Do not use `followup_task` across proof-checker rounds.
 
 ### Fix quality
 - **Minimal fixes**: Fix exactly what's broken, nothing more.
@@ -535,7 +535,7 @@ must carry an explicit justification in `summary` + `details.issues`.
 
 ### Thread independence
 
-Every invocation uses a fresh reviewer agent. Never use `send_input` across
+Every invocation uses a fresh reviewer agent. Never use `followup_task` across
 proof-checker runs. Do not accept prior audit outputs
 (PAPER_CLAIM_AUDIT, CITATION_AUDIT, EXPERIMENT_LOG) as input — the fresh
 thread preserves reviewer independence per

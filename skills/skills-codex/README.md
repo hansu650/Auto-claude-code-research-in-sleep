@@ -8,7 +8,7 @@ Codex-native mirror and adaptation layer for the main ARIS `skills/` package.
 - Support directory: `shared-references/`, with all `30/30` mainline reference names mirrored
 - Default reviewer contract for reviewer-heavy skills:
   - round 1: `spawn_agent`
-  - follow-up: `send_input`
+  - follow-up: `followup_task`
   - reasoning effort: `xhigh`
   - base Codex self-review: `review_independence: same-family`,
     `acceptance_status: provisional`

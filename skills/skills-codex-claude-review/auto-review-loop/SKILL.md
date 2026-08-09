@@ -5,18 +5,43 @@ description: "Autonomous multi-round research review loop. Repeatedly reviews us
 
 > Override for Codex users who want **Claude Code**, not a second Codex agent, to act as the reviewer. Install this package **after** `skills/skills-codex/*`.
 >
-> This reviewer is a different model family from the Codex executor. Every overlay trace/audit records:
+> This reviewer is a different model family from the Codex executor. Only after complete artifact transport and a grounded external review response may the trace/audit record:
 >
 > ```yaml
 > review_independence: cross-family
 > acceptance_status: accepted
 > ```
+> A bridge or artifact-transport failure records `REVIEW_UNAVAILABLE` / `BLOCKED` and is never accepted.
 
 # Auto Review Loop: Autonomous Research Improvement
 
-> **Claude overlay assurance:** this route is a different model family from the Codex executor and records `review_independence: cross-family` plus `acceptance_status: accepted`.
+> **Claude overlay assurance:** this route is a different model family from the Codex executor. Record `review_independence: cross-family` and `acceptance_status: accepted` only after complete artifact transport and a grounded external review response. A bridge or transport failure records `REVIEW_UNAVAILABLE` / `BLOCKED` and is never accepted.
 
 Autonomously iterate: review → implement fixes → re-review, until the external reviewer gives a positive assessment or MAX_ROUNDS is reached.
+
+## Prerequisites
+
+- Install the base Codex-native skills first: copy `skills/skills-codex/*` into `~/.codex/skills/`.
+- Then install this overlay package: copy `skills/skills-codex-claude-review/*` into `~/.codex/skills/` and allow it to overwrite the same skill names.
+- Register the local reviewer bridge:
+  ```bash
+  codex mcp add claude-review -- python3 ~/.codex/mcp-servers/claude-review/server.py
+  ```
+- This gives Codex access to `mcp__claude-review__review_start`, `mcp__claude-review__review_reply_start`, and `mcp__claude-review__review_status`.
+- If the bridge is unavailable, report `REVIEW_UNAVAILABLE` / `BLOCKED`;
+  never substitute the executor's own judgment for an independent review.
+- The default bridge receives prompt content, not arbitrary local-file access.
+  Before **every** review call, expand every path-like placeholder in the
+  templates below into a complete content-faithful artifact bundle with
+  absolute path, source SHA-256, extraction method/version, and explicit
+  `BEGIN/END ARTIFACT` boundaries. Paths are selectors for the executor to
+  expand; paths alone are never reviewer evidence.
+- Include text/code verbatim. For PDFs, include complete deterministically
+  extracted text and the original PDF hash. Attach supported images with their
+  hashes when the bridge supports them. If any required text, diff, result,
+  PDF, or visual artifact cannot be transmitted faithfully within request and
+  model limits, report `REVIEW_UNAVAILABLE` / `BLOCKED`; do not silently
+  truncate it and do not record an `accepted` verdict.
 
 ## Context: $ARGUMENTS
 
@@ -43,7 +68,7 @@ For `difficulty: hard` and `difficulty: nightmare`, maintain `review-stage/REVIE
 - Tell the reviewer to check whether prior suspicions were genuinely addressed or merely sidestepped.
 - Require a `Memory update` section in the reviewer response.
 - After Phase B, copy the `Memory update` into `REVIEWER_MEMORY.md` before writing `REVIEW_STATE.json`.
-- In `nightmare`, launch an additional fresh adversarial reviewer with direct repository/file-reading instructions. It should read `NARRATIVE_REPORT.md` or `review-stage/AUTO_REVIEW.md` for the author's claims, then verify those claims against code, logs, result files, and paper drafts instead of trusting executor summaries.
+- In `nightmare`, launch an additional fresh adversarial reviewer with an independently assembled, content-faithful artifact bundle. Include the complete claims, code, logs, result files, and paper drafts with source hashes; never substitute executor summaries or bare repository paths.
 
 ## Instructions
 
@@ -111,12 +136,21 @@ mcp__claude-review__review_start:
   prompt: |
     [Round N/MAX_ROUNDS of autonomous review loop]
 
-    Review the work directly from its artifacts — executor notes are not
-    evidence, so read the files yourself rather than trusting my framing:
-    - Claims / paper draft: <path>
-    - Methods / code under review: <path(s)>
-    - Raw results (verbatim files, not a summary): <path(s)>
-    - Changed since last round: <changed-file paths> — read the diff, not my description
+    Review the complete transmitted artifact bundle below. Executor notes
+    and bare paths are not evidence; each item must contain its source hash
+    and complete content:
+    --- BEGIN ARTIFACT role=claims path=<absolute-path> sha256=<hex> extraction=<method+version> ---
+    [complete paper draft or claims content]
+    --- END ARTIFACT role=claims ---
+    --- BEGIN ARTIFACT role=methods path=<absolute-path> sha256=<hex> extraction=<method+version> ---
+    [complete methods or code content]
+    --- END ARTIFACT role=methods ---
+    --- BEGIN ARTIFACT role=results path=<absolute-path> sha256=<hex> extraction=<method+version> ---
+    [complete raw result content]
+    --- END ARTIFACT role=results ---
+    --- BEGIN ARTIFACT role=changes path=<absolute-path> sha256=<hex> extraction=<method+version> ---
+    [complete raw diff content]
+    --- END ARTIFACT role=changes ---
 
     Please act as a senior ML reviewer (NeurIPS/ICML level). Start from the
     assumption that the work is broken somewhere — your job is to find where.
@@ -132,7 +166,7 @@ mcp__claude-review__review_start:
     up and is ready, say so clearly.
 ```
 
-After this start call, immediately save the returned `jobId` and poll `mcp__claude-review__review_status` with a bounded `waitSeconds` until `done=true`. Treat the completed status payload's `response` as the reviewer output, and save the completed `threadId` for any follow-up round.
+After this review call, immediately save the returned `jobId` and poll `mcp__claude-review__review_status` with a bounded `waitSeconds` until `done=true`. A terminal payload is usable only when `status` is exactly `completed`, `error` is empty, and `response` is a non-empty string. Only then treat `response` as reviewer output and save the completed `threadId` for a follow-up round. Otherwise record `REVIEW_UNAVAILABLE` / `BLOCKED`, preserve the error in the trace, and do not record an `accepted` review.
 
 If this is round 2+, use `mcp__claude-review__review_reply_start` with the saved completed `threadId`, then poll `mcp__claude-review__review_status` with the returned `jobId` until `done=true` to maintain continuity.
 
@@ -142,7 +176,7 @@ Use the same `mcp__claude-review__review_start` / `mcp__claude-review__review_re
 
 ##### Nightmare — Independent Repository Review
 
-Use everything in hard mode, then ask an additional fresh adversarial reviewer to verify claims against repository files, logs, result files, and paper drafts instead of trusting executor summaries. Preserve the fresh review as a separate raw response and trace.
+Use everything in hard mode, then give an additional fresh adversarial reviewer an independently assembled, complete content-faithful bundle of the claims, code, logs, result files, and paper drafts. Preserve the fresh review as a separate raw response and trace.
 
 #### Phase B: Parse Assessment
 
@@ -214,7 +248,7 @@ mcp__claude-review__review_reply_start:
     [paste rebuttal + evidence]
 ```
 
-After this start call, immediately save the returned `jobId` and poll `mcp__claude-review__review_status` with a bounded `waitSeconds` until `done=true`. Treat the completed status payload's `response` as the reviewer output, and save the completed `threadId` for any follow-up round.
+After this review call, immediately save the returned `jobId` and poll `mcp__claude-review__review_status` with a bounded `waitSeconds` until `done=true`. A terminal payload is usable only when `status` is exactly `completed`, `error` is empty, and `response` is a non-empty string. Only then treat `response` as reviewer output and save the completed `threadId` for a follow-up round. Otherwise record `REVIEW_UNAVAILABLE` / `BLOCKED`, preserve the error in the trace, and do not record an `accepted` review.
 
 Record a `### Debate Transcript (hard + nightmare only)` section in `review-stage/AUTO_REVIEW.md`. Only mark a weakness resolved if the reviewer accepts the rebuttal.
 
@@ -356,7 +390,7 @@ When loop ends (positive assessment or max rounds):
 
 > Follow these shared protocols for all output files:
 > - **[Output Versioning Protocol](../../shared-references/output-versioning.md)** — write timestamped file first, then copy to fixed name
-> - **[Output Manifest Protocol](../../shared-references/output-manifest.md)** — log every output to MANIFEST.md
+> - **[Output Manifest Protocol](../../shared-references/output-manifest.md)** — maintain MANIFEST.md only when a run exceeds the protocol's >15-artifact threshold
 > - **[Output Language Protocol](../../shared-references/output-language.md)** — respect the project's language setting
 
 ## Key Rules
@@ -381,14 +415,20 @@ mcp__claude-review__review_reply_start:
   prompt: |
     [Round N update]
 
-    Since your last review these files changed — read them yourself; do not
-    take my word for what changed or whether it worked:
-    - Changed files: <paths>
-    - Raw diff: <path, or the `git diff` range>
-    - Updated raw results: <result-file paths> (verbatim files, not a pasted table)
+    Review this complete revised-artifact bundle; do not rely on my
+    description of what changed or whether it worked:
+    --- BEGIN ARTIFACT role=revised-files path=<absolute-path> sha256=<hex> extraction=<method+version> ---
+    [complete revised file content]
+    --- END ARTIFACT role=revised-files ---
+    --- BEGIN ARTIFACT role=raw-diff path=<absolute-path-or-range> sha256=<hex> extraction=<method+version> ---
+    [complete raw diff]
+    --- END ARTIFACT role=raw-diff ---
+    --- BEGIN ARTIFACT role=updated-results path=<absolute-path> sha256=<hex> extraction=<method+version> ---
+    [complete updated raw result content]
+    --- END ARTIFACT role=updated-results ---
 
     Please re-score and re-assess. Are the remaining concerns addressed?
     Same format: Score, Verdict, Remaining Weaknesses, Minimum Fixes.
 ```
 
-After this start call, immediately save the returned `jobId` and poll `mcp__claude-review__review_status` with a bounded `waitSeconds` until `done=true`. Treat the completed status payload's `response` as the reviewer output, and save the completed `threadId` for any follow-up round.
+After this review call, immediately save the returned `jobId` and poll `mcp__claude-review__review_status` with a bounded `waitSeconds` until `done=true`. A terminal payload is usable only when `status` is exactly `completed`, `error` is empty, and `response` is a non-empty string. Only then treat `response` as reviewer output and save the completed `threadId` for a follow-up round. Otherwise record `REVIEW_UNAVAILABLE` / `BLOCKED`, preserve the error in the trace, and do not record an `accepted` review.

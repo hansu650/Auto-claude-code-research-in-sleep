@@ -67,7 +67,7 @@ Locate and list these files WITHOUT reading or summarizing their content:
 Scan project directory for:
 1. Evaluation scripts:    *eval*.py, *metric*.py, *test*.py, *benchmark*.py
 2. Result files:          *.json, *.csv in results/, outputs/, logs/
-3. Ground truth paths:    look in eval scripts for data loading (dataset paths, GT references)
+3. Dataset/GT candidates: files or directories whose names indicate labels, targets, references, or datasets
 4. Experiment tracker:    EXPERIMENT_TRACKER.md, EXPERIMENT_LOG.md
 5. Paper claims:          NARRATIVE_REPORT.md, paper/sections/*.tex, PAPER_PLAN.md
 6. Config files:          *.yaml, *.toml, *.json configs with metric definitions
@@ -104,6 +104,7 @@ You are an experiment integrity auditor. Start from the assumption that the
     Files to read:
     - Evaluation scripts: [list paths]
     - Result files: [list paths]
+    - Dataset/GT candidates: [list paths]
     - Experiment tracker: [list paths]
     - Paper claims: [list paths]
     - Config files: [list paths]

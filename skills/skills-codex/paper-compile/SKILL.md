@@ -63,6 +63,20 @@ For a **layout-only** request, establish a content-preservation gate before edit
 - State the exact extraction/comparison method and coverage. Never call an underspecified or spot-checked comparison deterministic.
 - If a layout fix appears to require rephrasing prose, stop and request authorization rather than silently changing it.
 
+If the user or project designates a SHA-256/text lock manifest, treat it as an
+additional binding gate:
+
+- verify every protected section before editing and again after the final build;
+- protect the lock manifest itself, and never regenerate it merely to make a
+  failed check pass;
+- rebuild a lock only after the user explicitly authorizes the corresponding
+  content change, and record the reason and reviewed diff;
+- when protected prose shares a file with authorized layout markup, use a
+  documented deterministic text extraction instead of claiming that a whole-file
+  hash proves preservation;
+- expect pagination and float flow to change after a first-page or layout edit.
+  The invariant is protected text/content, not pixel-identical downstream pages.
+
 ### Step 1: Verify Prerequisites Portably
 
 Detect the host shell and use its native commands. Do not assume that Bash syntax works in PowerShell or that PowerShell syntax works in Bash.
@@ -219,6 +233,22 @@ For conference submission, additional checks:
 
 The verified build output is the source of truth. If the final PDF is copied or renamed for delivery, compute a cryptographic hash (prefer SHA-256) for both the verified output and delivered file and require exact equality. A successful copy command or equal file size is not sufficient. Report both resolved paths and hashes; if they differ, do not present the delivered file as verified.
 
+### Step 7.6: Mirror Submission Metadata When Applicable
+
+Run this gate only when the user is preparing a portal submission and provides,
+or the project explicitly designates, a local submission-fields artifact.
+
+- Compare title, abstract, keywords, track, and author order against the
+  canonical source using documented whitespace/line-break normalization. Do not
+  silently normalize punctuation, wording, or keyword order.
+- Keep personal portal metadata local unless the user explicitly authorizes
+  publishing it.
+- If the portal offers the uploaded PDF for download, hash the downloaded copy
+  against the verified local delivery. A submission ID or timestamp proves that
+  an event occurred; it does not prove which bytes or metadata were accepted.
+- If the portal cannot be read back, report that limitation instead of claiming
+  an end-to-end mirror check.
+
 ### Step 8: Output Summary
 
 ```markdown
@@ -259,7 +289,7 @@ The verified build output is the source of truth. If the final PDF is copied or 
 | Venue | Style File | Citation | Page Limit | Refs in limit? | Submission |
 |-------|-----------|----------|------------|----------------|------------|
 | ICLR 2026 | `iclr2026_conference.sty` | `natbib` (`\citep`/`\citet`) | 9 pages (to Conclusion end) | No | OpenReview |
-| NeurIPS 2025 | `neurips_2025.sty` | `natbib` (`\citep`/`\citet`) | 9 pages (to Conclusion end) | No | OpenReview |
-| ICML 2025 | `icml2025.sty` | `natbib` (`\citep`/`\citet`) | 8 pages (to Conclusion end) | No | OpenReview |
+| NeurIPS 2026 | `neurips_2026.sty` | `natbib` (`\citep`/`\citet`) | 9 pages (to Conclusion end) | No | OpenReview |
+| ICML 2026 | `icml2026.sty` | `natbib` (`\citep`/`\citet`) | 8 pages (to Conclusion end) | No | OpenReview |
 | IEEE Journal | `IEEEtran.cls` [journal] | `cite` (`\cite{}`, numeric) | ~12-14 pages (Transactions) / ~4-5 (Letters) | **Yes** | IEEE Author Portal / ScholarOne |
 | IEEE Conference | `IEEEtran.cls` [conference] | `cite` (`\cite{}`, numeric) | 5-8 pages (varies by conf) | **Yes** | EDAS / IEEE Author Portal |

@@ -8,7 +8,7 @@
 - 支持目录：`shared-references/`，与主线 `30/30` 名称完整对齐
 - reviewer-heavy skill 的默认 reviewer 契约：
   - 首轮：`spawn_agent`
-  - 续接：`send_input`
+  - 续接：`followup_task`
   - 推理强度：`xhigh`
   - 基础 Codex 自审：`review_independence: same-family`、
     `acceptance_status: provisional`

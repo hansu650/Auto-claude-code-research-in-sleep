@@ -17,6 +17,15 @@ Draft a LaTeX paper based on: **$ARGUMENTS**
 - Stay project-neutral: do not assume any paper, method, dataset, metric, filename, numbering, venue, build tool, or result that is not stated or discovered.
 <!-- END ARIS NEUTRAL: COLD START -->
 
+## Respect User-Approved Text Locks
+
+If the user or project designates a section lock/hash manifest, treat the
+listed prose as read-only unless the current request explicitly authorizes a
+content change. Before changing locked prose, present the proposed old/new
+text or a focused diff for approval. After approval, update the lock only after
+the revised text is verified, and record why the lock changed. Never refresh a
+lock simply to conceal an accidental rewrite.
+
 The constants and template paths below are full-draft initialization fallbacks, not facts
 about an existing manuscript. Do not apply them to a section-only rewrite or when local
 files establish another venue, anonymity setting, page rule, or directory layout.
@@ -68,14 +77,15 @@ The skill includes conference templates in `templates/`. Select based on TARGET_
 **NeurIPS:**
 ```latex
 \documentclass{article}
-\usepackage[preprint]{neurips_2025}
-% \usepackage[final]{neurips_2025}  % Camera-ready
+\usepackage{neurips_2026}
+% \usepackage[main,final]{neurips_2026}  % Camera-ready main track
 ```
 
 **ICML:**
 ```latex
-\documentclass[accepted]{icml2025}
-% Use [accepted] for camera-ready
+\documentclass{article}
+\usepackage{icml2026}
+% \usepackage[accepted]{icml2026}  % Camera-ready
 ```
 
 **IEEE Journal** (Transactions, Letters):
@@ -99,7 +109,7 @@ Generate this file structure:
 ```
 paper/
 ├── main.tex                    # master file (includes sections)
-├── iclr2026_conference.sty     # or neurips_2025.sty / icml2025.sty / IEEEtran.cls + IEEEtran.bst
+├── iclr2026_conference.sty     # or neurips_2026.sty / icml2026.sty / IEEEtran.cls + IEEEtran.bst
 ├── math_commands.tex           # shared math macros
 ├── references.bib              # bibliography (filtered — only cited entries)
 ├── sections/
@@ -399,7 +409,9 @@ Before declaring done:
 
 ## Key Rules
 
-- **Large file handling**: If the Write tool fails due to file size, immediately retry using Bash (`cat << 'EOF' > file`) to write in chunks. Do NOT ask the user for permission — just do it silently.
+- **Large file handling**: if one edit is too large, split it into smaller
+  reviewable `apply_patch`/Edit operations. Never fall back to shell redirection
+  or a heredoc that overwrites the whole file.
 
 - **Do NOT generate author names, emails, or affiliations** — use anonymous block or placeholder
 - **Write complete sections, not outlines** — the output should be compilable LaTeX

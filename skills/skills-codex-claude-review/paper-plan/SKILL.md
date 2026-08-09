@@ -5,12 +5,13 @@ description: "Plan and structure a research paper from available project evidenc
 
 > Override for Codex users who want **Claude Code**, not a second Codex agent, to act as the reviewer. Install this package **after** `skills/skills-codex/*`.
 >
-> This reviewer is a different model family from the Codex executor. Every overlay trace/audit records:
+> This reviewer is a different model family from the Codex executor. Only after complete artifact transport and a grounded external review response may the trace/audit record:
 >
 > ```yaml
 > review_independence: cross-family
 > acceptance_status: accepted
 > ```
+> A bridge or artifact-transport failure records `REVIEW_UNAVAILABLE` / `BLOCKED` and is never accepted.
 
 # Paper Plan: From Review Conclusions to Paper Outline
 
@@ -25,6 +26,30 @@ Generate a structured, section-by-section paper outline from: **$ARGUMENTS**
 - If required information is missing, ask only for the smallest blocking input. When safe, still provide the best useful scaffold, partial artifact, or diagnostic supported by the available evidence.
 - Stay project-neutral: do not assume any paper, method, dataset, metric, filename, numbering, venue, build tool, or result that is not stated or discovered.
 <!-- END ARIS NEUTRAL: COLD START -->
+
+## Prerequisites
+
+- Install the base Codex-native skills first: copy `skills/skills-codex/*` into `~/.codex/skills/`.
+- Then install this overlay package: copy `skills/skills-codex-claude-review/*` into `~/.codex/skills/` and allow it to overwrite the same skill names.
+- Register the local reviewer bridge:
+  ```bash
+  codex mcp add claude-review -- python3 ~/.codex/mcp-servers/claude-review/server.py
+  ```
+- This gives Codex access to `mcp__claude-review__review_start`, `mcp__claude-review__review_reply_start`, and `mcp__claude-review__review_status`.
+- If the bridge is unavailable, report `REVIEW_UNAVAILABLE` / `BLOCKED`;
+  never substitute the executor's own judgment for an independent review.
+- The default bridge receives prompt content, not arbitrary local-file access.
+  Before **every** review call, expand every path-like placeholder in the
+  templates below into a complete content-faithful artifact bundle with
+  absolute path, source SHA-256, extraction method/version, and explicit
+  `BEGIN/END ARTIFACT` boundaries. Paths are selectors for the executor to
+  expand; paths alone are never reviewer evidence.
+- Include text/code verbatim. For PDFs, include complete deterministically
+  extracted text and the original PDF hash. Attach supported images with their
+  hashes when the bridge supports them. If any required text, diff, result,
+  PDF, or visual artifact cannot be transmitted faithfully within request and
+  model limits, report `REVIEW_UNAVAILABLE` / `BLOCKED`; do not silently
+  truncate it and do not record an `accepted` verdict.
 
 The constants and paths below are planning fallbacks, not facts about an existing
 project. Do not impose them when the request or discovered artifacts establish a venue,
@@ -248,7 +273,7 @@ mcp__claude-review__review_start:
     Be specific and actionable — "add X" not "consider more experiments".
 ```
 
-After this start call, immediately save the returned `jobId` and poll `mcp__claude-review__review_status` with a bounded `waitSeconds` until `done=true`. Treat the completed status payload's `response` as the reviewer output, and save the completed `threadId` for any follow-up round.
+After this review call, immediately save the returned `jobId` and poll `mcp__claude-review__review_status` with a bounded `waitSeconds` until `done=true`. A terminal payload is usable only when `status` is exactly `completed`, `error` is empty, and `response` is a non-empty string. Only then treat `response` as reviewer output and save the completed `threadId` for a follow-up round. Otherwise record `REVIEW_UNAVAILABLE` / `BLOCKED`, preserve the error in the trace, and do not record an `accepted` review.
 
 Apply feedback before finalizing.
 
@@ -313,5 +338,5 @@ Outline methodology inspired by [Research-Paper-Writing-Skills](https://github.c
 
 > Follow these shared protocols for all output files:
 > - **[Output Versioning Protocol](../../shared-references/output-versioning.md)** — write timestamped file first, then copy to fixed name
-> - **[Output Manifest Protocol](../../shared-references/output-manifest.md)** — log every output to MANIFEST.md
+> - **[Output Manifest Protocol](../../shared-references/output-manifest.md)** — maintain MANIFEST.md only when a run exceeds the protocol's >15-artifact threshold
 > - **[Output Language Protocol](../../shared-references/output-language.md)** — respect the project's language setting

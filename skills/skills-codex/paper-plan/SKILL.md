@@ -304,5 +304,5 @@ Outline methodology inspired by [Research-Paper-Writing-Skills](https://github.c
 
 > Follow these shared protocols for all output files:
 > - **[Output Versioning Protocol](../../shared-references/output-versioning.md)** — write timestamped file first, then copy to fixed name
-> - **[Output Manifest Protocol](../../shared-references/output-manifest.md)** — log every output to MANIFEST.md
+> - **[Output Manifest Protocol](../../shared-references/output-manifest.md)** — maintain MANIFEST.md only when a run exceeds the protocol's >15-artifact threshold
 > - **[Output Language Protocol](../../shared-references/output-language.md)** — respect the project's language setting

@@ -302,4 +302,4 @@ Skip if `RENDER_HTML = false`.
 
 ## Review Tracing
 
-After each `spawn_agent` or `send_input` reviewer call, save the trace following `../shared-references/review-tracing.md`. Write files directly to `.aris/traces/rebuttal/<date>_run<NN>/`. Respect the `--- trace:` parameter when present (default: `full`).
+After each `spawn_agent` or `followup_task` reviewer call, save the trace following `../shared-references/review-tracing.md`. Write files directly to `.aris/traces/rebuttal/<date>_run<NN>/`. Respect the `--- trace:` parameter when present (default: `full`).

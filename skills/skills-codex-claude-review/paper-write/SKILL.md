@@ -5,12 +5,13 @@ description: "Write, rewrite, or polish research-paper prose and LaTeX from avai
 
 > Override for Codex users who want **Claude Code**, not a second Codex agent, to act as the reviewer. Install this package **after** `skills/skills-codex/*`.
 >
-> This reviewer is a different model family from the Codex executor. Every overlay trace/audit records:
+> This reviewer is a different model family from the Codex executor. Only after complete artifact transport and a grounded external review response may the trace/audit record:
 >
 > ```yaml
 > review_independence: cross-family
 > acceptance_status: accepted
 > ```
+> A bridge or artifact-transport failure records `REVIEW_UNAVAILABLE` / `BLOCKED` and is never accepted.
 
 # Paper Write: Section-by-Section LaTeX Generation
 
@@ -25,6 +26,39 @@ Draft a LaTeX paper based on: **$ARGUMENTS**
 - If required information is missing, ask only for the smallest blocking input. When safe, still provide the best useful scaffold, partial artifact, or diagnostic supported by the available evidence.
 - Stay project-neutral: do not assume any paper, method, dataset, metric, filename, numbering, venue, build tool, or result that is not stated or discovered.
 <!-- END ARIS NEUTRAL: COLD START -->
+
+## Prerequisites
+
+- Install the base Codex-native skills first: copy `skills/skills-codex/*` into `~/.codex/skills/`.
+- Then install this overlay package: copy `skills/skills-codex-claude-review/*` into `~/.codex/skills/` and allow it to overwrite the same skill names.
+- Register the local reviewer bridge:
+  ```bash
+  codex mcp add claude-review -- python3 ~/.codex/mcp-servers/claude-review/server.py
+  ```
+- This gives Codex access to `mcp__claude-review__review_start`, `mcp__claude-review__review_reply_start`, and `mcp__claude-review__review_status`.
+- If the bridge is unavailable, report `REVIEW_UNAVAILABLE` / `BLOCKED`;
+  never substitute the executor's own judgment for an independent review.
+- The default bridge receives prompt content, not arbitrary local-file access.
+  Before **every** review call, expand every path-like placeholder in the
+  templates below into a complete content-faithful artifact bundle with
+  absolute path, source SHA-256, extraction method/version, and explicit
+  `BEGIN/END ARTIFACT` boundaries. Paths are selectors for the executor to
+  expand; paths alone are never reviewer evidence.
+- Include text/code verbatim. For PDFs, include complete deterministically
+  extracted text and the original PDF hash. Attach supported images with their
+  hashes when the bridge supports them. If any required text, diff, result,
+  PDF, or visual artifact cannot be transmitted faithfully within request and
+  model limits, report `REVIEW_UNAVAILABLE` / `BLOCKED`; do not silently
+  truncate it and do not record an `accepted` verdict.
+
+## Respect User-Approved Text Locks
+
+If the user or project designates a section lock/hash manifest, treat the
+listed prose as read-only unless the current request explicitly authorizes a
+content change. Before changing locked prose, present the proposed old/new
+text or a focused diff for approval. After approval, update the lock only after
+the revised text is verified, and record why the lock changed. Never refresh a
+lock simply to conceal an accidental rewrite.
 
 The constants and template paths below are full-draft initialization fallbacks, not facts
 about an existing manuscript. Do not apply them to a section-only rewrite or when local
@@ -77,14 +111,15 @@ The skill includes conference templates in `templates/`. Select based on TARGET_
 **NeurIPS:**
 ```latex
 \documentclass{article}
-\usepackage[preprint]{neurips_2025}
-% \usepackage[final]{neurips_2025}  % Camera-ready
+\usepackage{neurips_2026}
+% \usepackage[main,final]{neurips_2026}  % Camera-ready main track
 ```
 
 **ICML:**
 ```latex
-\documentclass[accepted]{icml2025}
-% Use [accepted] for camera-ready
+\documentclass{article}
+\usepackage{icml2026}
+% \usepackage[accepted]{icml2026}  % Camera-ready
 ```
 
 **IEEE Journal** (Transactions, Letters):
@@ -108,7 +143,7 @@ Generate this file structure:
 ```
 paper/
 ├── main.tex                    # master file (includes sections)
-├── iclr2026_conference.sty     # or neurips_2025.sty / icml2025.sty / IEEEtran.cls + IEEEtran.bst
+├── iclr2026_conference.sty     # or neurips_2026.sty / icml2026.sty / IEEEtran.cls + IEEEtran.bst
 ├── math_commands.tex           # shared math macros
 ├── references.bib              # bibliography (filtered — only cited entries)
 ├── sections/
@@ -369,7 +404,7 @@ mcp__claude-review__review_start:
     [paste full draft text]
 ```
 
-After this start call, immediately save the returned `jobId` and poll `mcp__claude-review__review_status` with a bounded `waitSeconds` until `done=true`. Treat the completed status payload's `response` as the reviewer output, and save the completed `threadId` for any follow-up round.
+After this review call, immediately save the returned `jobId` and poll `mcp__claude-review__review_status` with a bounded `waitSeconds` until `done=true`. A terminal payload is usable only when `status` is exactly `completed`, `error` is empty, and `response` is a non-empty string. Only then treat `response` as reviewer output and save the completed `threadId` for a follow-up round. Otherwise record `REVIEW_UNAVAILABLE` / `BLOCKED`, preserve the error in the trace, and do not record an `accepted` review.
 
 Apply CRITICAL and MAJOR fixes. Document MINOR issues for the user.
 
@@ -408,7 +443,9 @@ Before declaring done:
 
 ## Key Rules
 
-- **Large file handling**: If the Write tool fails due to file size, immediately retry using Bash (`cat << 'EOF' > file`) to write in chunks. Do NOT ask the user for permission — just do it silently.
+- **Large file handling**: if one edit is too large, split it into smaller
+  reviewable `apply_patch`/Edit operations. Never fall back to shell redirection
+  or a heredoc that overwrites the whole file.
 
 - **Do NOT generate author names, emails, or affiliations** — use anonymous block or placeholder
 - **Write complete sections, not outlines** — the output should be compilable LaTeX

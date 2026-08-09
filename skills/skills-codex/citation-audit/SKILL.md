@@ -44,7 +44,7 @@ The dangerous citation problems are **not** wildly fake citations — those are 
 ## Constants
 
 - **REVIEWER_MODEL = `gpt-5.6-sol`** — Fresh Codex reviewer with web access; same-family provisional in the base mirror.
-- **CONTEXT_POLICY = `fresh`** — Each audit run uses a new reviewer thread (REVIEWER_BIAS_GUARD). Continue only with `send_input` when explicitly resuming the same audit.
+- **CONTEXT_POLICY = `fresh`** — Each audit run uses a new reviewer thread (REVIEWER_BIAS_GUARD). Continue only with `followup_task` when explicitly resuming the same audit.
 - **WEB_SEARCH = required** — The reviewer must perform real web/DBLP/arXiv lookups, not pattern-match from memory.
 - **OUTPUT = `CITATION_AUDIT.md`** — Human-readable per-entry verdict report.
 - **STATE = `CITATION_AUDIT.json`** — Machine-readable verdict ledger consumable by downstream tools.
@@ -486,7 +486,7 @@ The `--uncited` flag does **not** appear in this table: uncited entries are advi
 
 ### Thread independence
 
-Every invocation uses a fresh reviewer agent. Never reuse `send_input` across
+Every invocation uses a fresh reviewer agent. Never reuse `followup_task` across
 different bibliography entries. Do not accept prior audit outputs (PROOF_AUDIT,
 PAPER_CLAIM_AUDIT, EXPERIMENT_LOG) as input — the fresh thread preserves
 reviewer independence per `shared-references/reviewer-independence.md`.

@@ -34,7 +34,7 @@ In this hybrid pack, the pipeline itself is unchanged, but `paper-plan` and `pap
 - **REVIEWER_MODEL = `gpt-5.6-sol`** — Model used via Codex MCP for plan review, figure review, writing review, and improvement loop.
 - **AUTO_PROCEED = true** — Auto-continue between phases. Set `false` to pause and wait for user approval after each phase.
 - **HUMAN_CHECKPOINT = false** — When `true`, the improvement loop (Phase 5) pauses after each round's review to let you see the score and provide custom modification instructions. When `false` (default), the loop runs fully autonomously. Passed through to `/auto-paper-improvement-loop`.
-- **ILLUSTRATION = `figurespec`** — Preferred architecture/illustration backend for Phase 2b: `figurespec` (default, deterministic JSON→SVG, best for architecture/workflow/topology), `gemini` (AI-generated, best for qualitative method illustrations; needs `GEMINI_API_KEY`), `mermaid` (best for lightweight flowcharts), or `false` (manual creation). `paper-writing` always calls `/paper-figure` as owner; `paper-figure` delegates to the selected backend and then runs its mandatory standalone artifact gate.
+- **ILLUSTRATION = `figurespec`** — Preferred architecture/illustration backend for Phase 2b: `figurespec` (default, routes to `/figure-spec` for deterministic JSON→SVG), `gemini` (AI-generated, best for qualitative method illustrations; needs `GEMINI_API_KEY`), `mermaid` (best for lightweight flowcharts), or `false` (manual creation). `paper-writing` always calls `/paper-figure` as owner; `paper-figure` delegates to the selected backend and then runs its mandatory standalone artifact gate.
 
 > Override inline: `/paper-writing "NARRATIVE_REPORT.md" — venue: NeurIPS, illustration: gemini, human checkpoint: true`
 > IEEE example: `/paper-writing "NARRATIVE_REPORT.md" — venue: IEEE_JOURNAL`
@@ -707,7 +707,7 @@ or directly if `assurance=draft`)
 
 > Follow these shared protocols for all output files:
 > - **[Output Versioning Protocol](../shared-references/output-versioning.md)** — write timestamped file first, then copy to fixed name
-> - **[Output Manifest Protocol](../shared-references/output-manifest.md)** — log every output to MANIFEST.md
+> - **[Output Manifest Protocol](../shared-references/output-manifest.md)** — maintain MANIFEST.md only when a run exceeds the protocol's >15-artifact threshold
 > - **[Output Language Protocol](../shared-references/output-language.md)** — note: paper-writing always outputs English LaTeX for venue submission
 
 ## Key Rules

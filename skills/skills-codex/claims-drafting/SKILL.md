@@ -173,11 +173,11 @@ If the examiner review identifies issues:
 1. Address all CRITICAL issues (anticipation, obviousness, indefiniteness)
 2. Address MAJOR issues (scope too narrow, missing support, weak fallbacks)
 3. Consider MINOR issues (antecedent basis, formatting)
-4. Re-submit to the same examiner via `send_input` using the saved reviewer id
+4. Re-submit to the same examiner via `followup_task` using the saved reviewer id
 5. Repeat up to `MAX_CLAIM_REVISION_ROUNDS` times
 
 ```text
-send_input:
+followup_task:
   target: [saved reviewer id from Step 5]
   message: |
     Here is the revised claim set after addressing the previous office action.

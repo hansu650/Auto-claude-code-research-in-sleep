@@ -24,7 +24,7 @@ Autonomously iterate: review → implement fixes → re-review, until the extern
 - **REVIEWER_BACKEND = `codex`** — Default: Codex reviewer agent at xhigh reasoning. Override with `--reviewer: oracle-pro` only when the user explicitly requests Oracle; if Oracle is unavailable, warn and fall back to Codex xhigh. **Same-family note:** this default reviewer is a second Codex/GPT agent — valid for Type-A completeness/drive review, but not a cross-family Type-B verdict; install a `skills-codex-claude-review` / `skills-codex-gemini-review` overlay for a cross-family acquittal (see `shared-references/reviewer-routing.md`).
 - **HUMAN_CHECKPOINT = false** — When `true`, pause after each round's review (Phase B) and present the score + weaknesses to the user. Wait for user input before proceeding to Phase C. The user can: approve the suggested fixes, provide custom modification instructions, skip specific fixes, or stop the loop early. When `false` (default), the loop runs fully autonomously.
 - **COMPACT = false** — When `true`, (1) read `EXPERIMENT_LOG.md` and `findings.md` instead of parsing full logs on session recovery, (2) append key findings to `findings.md` after each round.
-- **REVIEWER_DIFFICULTY = medium** — Controls adversarial depth: `medium` uses normal Codex xhigh review through `spawn_agent` / `send_input`; `hard` adds Reviewer Memory and Debate Protocol; `nightmare` adds direct repository-reading adversarial verification by an independent reviewer.
+- **REVIEWER_DIFFICULTY = medium** — Controls adversarial depth: `medium` uses normal Codex xhigh review through `spawn_agent` / `followup_task`; `hard` adds Reviewer Memory and Debate Protocol; `nightmare` adds direct repository-reading adversarial verification by an independent reviewer.
 - **RENDER_HTML = true** — When `true` (default), auto-render `review-stage/AUTO_REVIEW.md` to HTML on loop termination via `/render-html`. Uses `--no-review` because the loop already performed a traced same-family provisional review. Set `false` to skip.
 
 > 💡 Override: `/auto-review-loop "topic" — compact: true, human checkpoint: true, difficulty: hard`
@@ -46,7 +46,7 @@ In hard and nightmare modes, the reviewer must actively look for omissions, unsu
 For `difficulty: hard` and `nightmare`, use the **Debate Protocol** after a critical review:
 
 1. Codex writes a concise rebuttal with evidence, not spin.
-2. Send the rebuttal to the same reviewer via `send_input`.
+2. Send the rebuttal to the same reviewer via `followup_task`.
 3. The reviewer rules which objections are resolved, unresolved, or newly discovered.
 4. Only mark a concern resolved when the reviewer accepts the rebuttal.
 
@@ -128,11 +128,11 @@ spawn_agent:
     up and is ready, say so clearly.
 ```
 
-If this is round 2+, use `send_input` with the saved agent id to maintain continuity.
+If this is round 2+, use `followup_task` with the saved agent id to maintain continuity.
 
 ##### Hard — Codex Review + Reviewer Memory
 
-Use the same `spawn_agent` / `send_input` route as medium, but prepend the full `review-stage/REVIEWER_MEMORY.md` contents under `## Your Reviewer Memory (persistent across rounds)` and require a `Memory update` section in the reviewer response.
+Use the same `spawn_agent` / `followup_task` route as medium, but prepend the full `review-stage/REVIEWER_MEMORY.md` contents under `## Your Reviewer Memory (persistent across rounds)` and require a `Memory update` section in the reviewer response.
 
 ##### Nightmare — Independent Repository Review
 
@@ -195,10 +195,10 @@ After parsing the review, Codex writes a structured rebuttal for up to three hig
 - **Evidence**: [specific code, result file, log, prior-round fix, or paper section]
 ```
 
-Send the rebuttal to the same reviewer via `send_input`:
+Send the rebuttal to the same reviewer via `followup_task`:
 
 ```text
-send_input:
+followup_task:
   target: [saved reviewer id]
   message: |
     Please rule on the author's rebuttal below.
@@ -322,7 +322,7 @@ Increment round counter → back to Phase A.
 
 ## Review Tracing
 
-After every `spawn_agent`, `send_input`, `oracle-pro`, or nightmare adversarial verification call, save a trace following `../shared-references/review-tracing.md`. Include prompt summary, reviewer route, saved agent id, raw response path, score/verdict, accepted fixes, rejected rebuttals, and the `Reviewer Memory` update if present.
+After every `spawn_agent`, `followup_task`, `oracle-pro`, or nightmare adversarial verification call, save a trace following `../shared-references/review-tracing.md`. Include prompt summary, reviewer route, saved agent id, raw response path, score/verdict, accepted fixes, rejected rebuttals, and the `Reviewer Memory` update if present.
 
 ### Termination
 
@@ -348,7 +348,7 @@ When loop ends (positive assessment or max rounds):
 
 > Follow these shared protocols for all output files:
 > - **[Output Versioning Protocol](../../shared-references/output-versioning.md)** — write timestamped file first, then copy to fixed name
-> - **[Output Manifest Protocol](../../shared-references/output-manifest.md)** — log every output to MANIFEST.md
+> - **[Output Manifest Protocol](../../shared-references/output-manifest.md)** — maintain MANIFEST.md only when a run exceeds the protocol's >15-artifact threshold
 > - **[Output Language Protocol](../../shared-references/output-language.md)** — respect the project's language setting
 
 ## Key Rules
@@ -356,7 +356,7 @@ When loop ends (positive assessment or max rounds):
 - **Large file handling**: If the Write tool fails due to file size, immediately retry using Bash (`cat << 'EOF' > file`) to write in chunks. Do NOT ask the user for permission — just do it silently.
 
 - ALWAYS use `reasoning_effort: xhigh` for maximum reasoning depth
-- Save agent id from first call, use `send_input` for subsequent rounds
+- Save agent id from first call, use `followup_task` for subsequent rounds
 - Be honest — include negative results and failed experiments
 - Do NOT hide weaknesses to game a positive score
 - Implement fixes BEFORE re-reviewing (don't just promise to fix)
@@ -367,7 +367,7 @@ When loop ends (positive assessment or max rounds):
 ## Prompt Template for Round 2+
 
 ```
-send_input:
+followup_task:
   target: [saved from round 1]
   # inherits the agent's model/effort — do not re-send
   message: |

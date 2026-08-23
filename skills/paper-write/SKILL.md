@@ -19,6 +19,15 @@ Draft a LaTeX paper based on: **$ARGUMENTS**
 - Stay project-neutral: do not assume any paper, method, dataset, metric, filename, numbering, venue, build tool, or result that is not stated or discovered.
 <!-- END ARIS NEUTRAL: COLD START -->
 
+## Respect User-Approved Text Locks
+
+If the user or project designates a section lock/hash manifest, treat the
+listed prose as read-only unless the current request explicitly authorizes a
+content change. Before changing locked prose, present the proposed old/new
+text or a focused diff for approval. After approval, update the lock only after
+the revised text is verified, and record why the lock changed. Never refresh a
+lock simply to conceal an accidental rewrite.
+
 The constants and template paths below are full-draft initialization fallbacks, not facts
 about an existing manuscript. Do not apply them to a section-only rewrite or when local
 files establish another venue, anonymity setting, page rule, or directory layout.
@@ -230,10 +239,18 @@ Process sections in order. For each section:
 
 Before drafting the front matter, re-read the one-sentence contribution from `PAPER_PLAN.md`. The Abstract and Introduction should make that takeaway obvious before the reader reaches the full method.
 
+For an empirical AI method paper, activate the fixed front-matter profile from
+`section-blueprints.md`: Abstract = exactly 10 sentences, Introduction contributions =
+exactly 3 bullets with `2 / 3 / 3` sentences, and Conclusion = exactly 8 sentences. The
+roles are fixed but the prose and content must come from the paper's Claim Ledger. If the
+user, venue, or paper type requires another profile, record its exact counts and roles in
+`PAPER_PLAN.md` before drafting. Count the final prose sentences rather than LaTeX line
+breaks, and do not treat decimals, citations, or abbreviations as sentence boundaries.
+
 #### Section-Specific Guidelines
 
 **§0 Abstract:**
-- Use the applicable semantic moves from `section-blueprints.md`; do not force a fixed sentence count
+- For an empirical AI method paper, write exactly 10 sentences in the role order defined by `section-blueprints.md`
 - Must be self-contained (understandable without reading the paper)
 - Start with the paper's specific contribution, not generic field-level background
 - Use only the canonical comparator, evidence, and scope from the Claim Ledger
@@ -245,7 +262,7 @@ Before drafting the front matter, re-read the one-sentence contribution from `PA
 - Open with a compelling hook (1-2 sentences, problem motivation)
 - State the gap clearly ("However, ...")
 - Give a brief approach overview before the reader gets lost in details
-- List 2-4 role-based, falsifiable contributions; map each to Claim IDs and evidence and do not force every bullet to begin with "We"
+- List exactly 3 role-based, falsifiable contributions with `2 / 3 / 3` sentences for the empirical AI method profile; map each to Claim IDs and evidence and do not force every bullet to begin with "We"
 - Preview the strongest result early instead of saving it for the experiments section
 - End with a brief roadmap ("The rest of this paper is organized as...")
 - Include the main result figure if space allows
@@ -281,10 +298,11 @@ Before drafting the front matter, re-read the one-sentence contribution from `PA
 - Target: 2.5-3 pages
 
 **§5 Conclusion:**
+- For an empirical AI method paper, write exactly 8 sentences in the role order defined by `section-blueprints.md`
 - Mirror the paper's claim order without copying the Introduction
 - Repeat only canonical evidence, comparators, protocols, and scope qualifiers
 - Introduce no new method, number, comparator, dataset, protocol, or claim
-- State limitations honestly; put Future Work in a separate paragraph derived from those limitations when space permits
+- State limitations honestly; add a separate Limitations or Future Work section only when the venue requires it, outside the eight-sentence count
 - Ethics statement and reproducibility statement (if venue requires)
 - Target: 0.5 pages
 
@@ -561,6 +579,7 @@ mcp__codex__codex:
     8. Would a skim reader understand the contribution from the title, abstract, introduction, and Figure 1?
     9. Do Abstract, contribution bullets, body, evidence, and Conclusion mirror the Claim Ledger without comparator, number, protocol, or scope drift?
     10. Does the Conclusion introduce any new claim or unsupported expansion?
+    11. Does the active sentence profile match exactly (empirical AI method default: Abstract 10, contribution bullets 2/3/3, Conclusion 8)?
 
     For each issue, specify: severity (CRITICAL/MAJOR/MINOR), location, and fix.
 
@@ -591,6 +610,7 @@ Before declaring done:
 - [ ] No TODO/FIXME/XXX markers left in the text
 - [ ] No `[VERIFY]` markers left unchecked
 - [ ] Abstract is self-contained (understandable without reading the paper)
+- [ ] Active sentence profile is satisfied exactly (empirical AI method default: Abstract 10, contribution bullets 2 / 3 / 3, Conclusion 8)
 - [ ] Front-Matter Coverage Index is complete and matches the canonical Claim Ledger
 - [ ] Abstract and Conclusion use the same canonical comparator, headline evidence, protocol, and scope qualifiers
 - [ ] Conclusion introduces no new method, number, comparator, dataset, protocol, or claim

@@ -5,12 +5,13 @@ description: "Plan and structure a research paper from available project evidenc
 
 > Override for Codex users who want **Claude Code**, not a second Codex agent, to act as the reviewer. Install this package **after** `skills/skills-codex/*`.
 >
-> This reviewer is a different model family from the Codex executor. Every overlay trace/audit records:
+> This reviewer is a different model family from the Codex executor. Only after complete artifact transport and a grounded external review response may the trace/audit record:
 >
 > ```yaml
 > review_independence: cross-family
 > acceptance_status: accepted
 > ```
+> A bridge or artifact-transport failure records `REVIEW_UNAVAILABLE` / `BLOCKED` and is never accepted.
 
 # Paper Plan: From Review Conclusions to Paper Outline
 
@@ -25,6 +26,30 @@ Generate a structured, section-by-section paper outline from: **$ARGUMENTS**
 - If required information is missing, ask only for the smallest blocking input. When safe, still provide the best useful scaffold, partial artifact, or diagnostic supported by the available evidence.
 - Stay project-neutral: do not assume any paper, method, dataset, metric, filename, numbering, venue, build tool, or result that is not stated or discovered.
 <!-- END ARIS NEUTRAL: COLD START -->
+
+## Prerequisites
+
+- Install the base Codex-native skills first: copy `skills/skills-codex/*` into `~/.codex/skills/`.
+- Then install this overlay package: copy `skills/skills-codex-claude-review/*` into `~/.codex/skills/` and allow it to overwrite the same skill names.
+- Register the local reviewer bridge:
+  ```bash
+  codex mcp add claude-review -- python3 ~/.codex/mcp-servers/claude-review/server.py
+  ```
+- This gives Codex access to `mcp__claude-review__review_start`, `mcp__claude-review__review_reply_start`, and `mcp__claude-review__review_status`.
+- If the bridge is unavailable, report `REVIEW_UNAVAILABLE` / `BLOCKED`;
+  never substitute the executor's own judgment for an independent review.
+- The default bridge receives prompt content, not arbitrary local-file access.
+  Before **every** review call, expand every path-like placeholder in the
+  templates below into a complete content-faithful artifact bundle with
+  absolute path, source SHA-256, extraction method/version, and explicit
+  `BEGIN/END ARTIFACT` boundaries. Paths are selectors for the executor to
+  expand; paths alone are never reviewer evidence.
+- Include text/code verbatim. For PDFs, include complete deterministically
+  extracted text and the original PDF hash. Attach supported images with their
+  hashes when the bridge supports them. If any required text, diff, result,
+  PDF, or visual artifact cannot be transmitted faithfully within request and
+  model limits, report `REVIEW_UNAVAILABLE` / `BLOCKED`; do not silently
+  truncate it and do not record an `accepted` verdict.
 
 The constants and paths below are planning fallbacks, not facts about an existing
 project. Do not impose them when the request or discovered artifacts establish a venue,
@@ -55,7 +80,7 @@ defensible outline.
 Keep the existing workflow and outputs, but use the shared references below to improve the quality of the story and outline:
 
 - Read `../shared-references/writing-principles.md` when framing the Abstract, Introduction, Related Work, or hero figure
-- Read `../shared-references/section-blueprints.md` **mandatorily** when planning a claim-bearing Abstract, Introduction contribution list, Method/analysis section, or Conclusion. Its Claim Ledger and mirror contract supersede rigid sentence templates.
+- Read `../shared-references/section-blueprints.md` **mandatorily** when planning a claim-bearing Abstract, Introduction contribution list, Method/analysis section, or Conclusion. Its Claim Ledger, fixed-count front-matter profile, and mirror contract are canonical.
 - Read `../shared-references/publication-layout-gates.md` **mandatorily** when planning any figure or table.
 - Read `../shared-references/venue-checklists.md` before freezing the outline for a specific venue
 - Load these references only when they help; they are support material, not a new workflow phase
@@ -135,13 +160,27 @@ Theory papers should:
 6. Conclusion (0.5 pages)
 ```
 
+### Step 2.5: Fix the Front-Matter Sentence Profile
+
+Record the exact profile before planning individual sections. For an empirical AI method
+paper, the default is: Abstract = 10 sentences; Introduction contributions = exactly 3
+bullets with `2 / 3 / 3` sentences; Conclusion = 8 sentences. Use the sentence-role order
+in `section-blueprints.md`. The roles and counts are fixed, while wording and technical
+content remain specific to the paper's Claim Ledger.
+
+An explicit user instruction or venue rule may replace this default. A theory,
+diagnostic, position, or other non-method paper also needs a type-specific profile. In
+either case, write the replacement exact counts and role sequence into `PAPER_PLAN.md`
+before drafting; never leave the profile variable or silently change it later.
+
 ### Step 3: Section-by-Section Planning
 
 For each section, specify:
 
 ```markdown
 ### §0 Abstract
-- **Semantic moves**: [applicable setting, gap, reframing, method/analysis, component roles, evidence/scope, takeaway from `section-blueprints.md`]
+- **Sentence profile**: [empirical AI method default = exactly 10 sentences; otherwise the recorded exact override]
+- **Sentence roles**: [setting → limitation → reframing → method contract → mechanism 1 → mechanism 2 → design boundary → primary evidence → secondary evidence/boundary → takeaway]
 - **Canonical claims**: [Claim IDs represented]
 - **Headline evidence**: [canonical comparator/result/scope, if applicable]
 - **Estimated length**: [venue limit; otherwise 150-200 words]
@@ -151,7 +190,7 @@ For each section, specify:
 - **Opening hook**: [1-2 sentences that motivate the problem]
 - **Gap**: [what's missing in prior work]
 - **Key questions**: [the research questions this paper answers]
-- **Contributions**: [2-4 role-based bullets, specific and falsifiable, each mapped to Claim IDs and evidence]
+- **Contributions**: [empirical AI method default = exactly 3 role-based bullets with 2 / 3 / 3 sentences: problem/formulation, method/mechanism, evidence/scope; each mapped to Claim IDs and evidence]
 - **Hero figure**: [describe what Figure 1 should show — MUST include clear comparison if applicable]
 - **Estimated length**: 1.5 pages
 - **Key citations**: [3-5 papers to cite here]
@@ -180,9 +219,10 @@ For each section, specify:
 - **Data source**: [which JSON files / experiment results]
 
 ### §5 Conclusion
-- **Claim-order mirror**: [problem/reframing → method/analysis → evidence → scope/limitations]
+- **Sentence profile**: [empirical AI method default = exactly 8 sentences; otherwise the recorded exact override]
+- **Sentence roles**: [answer → mechanism → primary evidence → secondary evidence/boundary → interpretation → limitation → practical takeaway → significance]
 - **No-new-claim check**: [no new method, number, comparator, dataset, protocol, or claim]
-- **Future Work**: [separate paragraph derived from a stated limitation, when space permits]
+- **Separate venue sections**: [Limitations/Future Work only when required, outside the eight-sentence Conclusion count]
 - **Estimated length**: 0.5 pages
 ```
 
@@ -243,12 +283,13 @@ mcp__claude-review__review_start:
     5. Page budget feasibility (MAX_PAGES = main body to Conclusion end, excluding refs/appendix)
     6. Claim mirroring — do Abstract, contribution bullets, body, evidence, and Conclusion preserve the same comparator, result, protocol, and scope?
     7. Publication layout — does every figure/table have a width, placement, preservation, caption, and priority contract?
+    8. Sentence-profile compliance — are the planned counts and roles exact (empirical AI method default: Abstract 10, contributions 2/3/3, Conclusion 8)?
 
     For each weakness, suggest the MINIMUM fix.
     Be specific and actionable — "add X" not "consider more experiments".
 ```
 
-After this start call, immediately save the returned `jobId` and poll `mcp__claude-review__review_status` with a bounded `waitSeconds` until `done=true`. Treat the completed status payload's `response` as the reviewer output, and save the completed `threadId` for any follow-up round.
+After this review call, immediately save the returned `jobId` and poll `mcp__claude-review__review_status` with a bounded `waitSeconds` until `done=true`. A terminal payload is usable only when `status` is exactly `completed`, `error` is empty, and `response` is a non-empty string. Only then treat `response` as reviewer output and save the completed `threadId` for a follow-up round. Otherwise record `REVIEW_UNAVAILABLE` / `BLOCKED`, preserve the error in the trace, and do not record an `accepted` review.
 
 Apply feedback before finalizing.
 
@@ -262,6 +303,7 @@ Save the final outline to `PAPER_PLAN.md` in the project root:
 **Title**: [working title]
 **Venue**: [target venue]
 **Type**: [empirical/theory/method]
+**Front-matter sentence profile**: [empirical AI method default: Abstract 10; contributions 2 / 3 / 3; Conclusion 8, or an explicit exact override]
 **Date**: [today]
 **Page budget**: [MAX_PAGES] pages (main body to Conclusion end, excluding references & appendix)
 **Section count**: [N] (must match the number of section files that will be created)
@@ -302,6 +344,7 @@ Save the final outline to `PAPER_PLAN.md` in the project root:
 - **MAX_PAGES counting differs by venue** — ML conferences: main body to Conclusion end, references/appendix NOT counted; AAAI main track is typically 7 technical-content pages plus references. **IEEE venues: references ARE counted toward the page limit.**
 - **Venue-specific norms** — ML conferences (ICLR/NeurIPS/ICML) use `natbib` (`\citep`/`\citet`); **IEEE venues use `cite` package (`\cite{}`, numeric style)**
 - **The Canonical Claim Ledger is the backbone** — every claim must map to evidence, every experiment must support a claim, and no duplicate claim store may drift from it
+- **Freeze sentence logic before drafting** — counts and roles are fixed by the active profile; they never justify invented content
 - **Figures need detailed descriptions** — especially the hero figure, which must clearly specify comparisons and visual expectations
 - **Section count is flexible** — 5-8 sections depending on paper type. Don't force content into a rigid 5-section template.
 
@@ -313,5 +356,5 @@ Outline methodology inspired by [Research-Paper-Writing-Skills](https://github.c
 
 > Follow these shared protocols for all output files:
 > - **[Output Versioning Protocol](../../shared-references/output-versioning.md)** — write timestamped file first, then copy to fixed name
-> - **[Output Manifest Protocol](../../shared-references/output-manifest.md)** — log every output to MANIFEST.md
+> - **[Output Manifest Protocol](../../shared-references/output-manifest.md)** — maintain MANIFEST.md only when a run exceeds the protocol's >15-artifact threshold
 > - **[Output Language Protocol](../../shared-references/output-language.md)** — respect the project's language setting

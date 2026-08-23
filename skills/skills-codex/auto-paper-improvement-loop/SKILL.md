@@ -358,7 +358,7 @@ spawn_agent:
     self-containedness, notation consistency, and visual presentation quality.
 ```
 
-If `REVIEWER_BIAS_GUARD = false` (legacy debugging only), use `send_input` with the saved reviewer id; this is **not** the recommended path.
+If `REVIEWER_BIAS_GUARD = false` (legacy debugging only), use `followup_task` with the saved reviewer id; this is **not** the recommended path.
 
 ### Step 5.5: Kill Argument Exercise (theory / scope-heavy papers only)
 
@@ -571,4 +571,4 @@ Based on end-to-end testing on a real theory-paper run:
 
 ## Review Tracing
 
-After each `spawn_agent`, `send_input`, or adversarial reviewer call, save the trace following `../shared-references/review-tracing.md`. Write files directly to `.aris/traces/auto-paper-improvement-loop/<date>_run<NN>/`. Respect the `--- trace:` parameter when present (default: `full`).
+After each `spawn_agent`, `followup_task`, or adversarial reviewer call, save the trace following `../shared-references/review-tracing.md`. Write files directly to `.aris/traces/auto-paper-improvement-loop/<date>_run<NN>/`. Respect the `--- trace:` parameter when present (default: `full`).

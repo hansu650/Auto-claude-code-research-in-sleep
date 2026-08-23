@@ -425,7 +425,7 @@ Invoke `/research-review` on the complete draft for grant-type-specific evaluati
 
 > ⚠️ **External review fallback**: If reviewer agents are unavailable, skip external review. Note "External review skipped — no reviewer agent available. Consider running `/auto-review-loop-llm` separately." in `GRANT_REVIEW.md`. The proposal is still usable without external review.
 
-If `/research-review` is invoked (preferred), it handles the external review internally. If you run the reviewer directly, use `spawn_agent` for Round 1 and `send_input` for follow-up rounds.
+If `/research-review` is invoked (preferred), it handles the external review internally. If you run the reviewer directly, use `spawn_agent` for Round 1 and `followup_task` for follow-up rounds.
 
 #### Round 1 (full draft review):
 
@@ -461,7 +461,7 @@ Save the returned reviewer agent id in `GRANT_STATE.json` if you want to continu
 If MAX_REVIEW_ROUNDS > 1 and revisions were applied:
 
 ```
-send_input:
+followup_task:
   target: [saved from Round 1]
   message: |
     [Round N review of revised [GRANT_TYPE] [GRANT_SUBTYPE] proposal]
@@ -486,7 +486,7 @@ Parse reviewer feedback into severity levels:
 - **MAJOR** — significant weaknesses. Fix before submission.
 - **MINOR** — suggestions for improvement. Fix if time allows.
 
-Implement CRITICAL and MAJOR fixes. If MAX_REVIEW_ROUNDS > 1, re-submit for another round via `send_input`.
+Implement CRITICAL and MAJOR fixes. If MAX_REVIEW_ROUNDS > 1, re-submit for another round via `followup_task`.
 
 #### 5.2 Generate Output
 
@@ -622,5 +622,5 @@ Parameters can be passed inline with `—` separator. They flow to sub-skills wh
 
 > Follow these shared protocols for all output files:
 > - **[Output Versioning Protocol](../../shared-references/output-versioning.md)** — write timestamped file first, then copy to fixed name
-> - **[Output Manifest Protocol](../../shared-references/output-manifest.md)** — log every output to MANIFEST.md
+> - **[Output Manifest Protocol](../../shared-references/output-manifest.md)** — maintain MANIFEST.md only when a run exceeds the protocol's >15-artifact threshold
 > - **[Output Language Protocol](../../shared-references/output-language.md)** — respect the project's language setting

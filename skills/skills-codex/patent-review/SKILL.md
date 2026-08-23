@@ -129,10 +129,10 @@ For each fix:
 
 ### Step 4: Round 2 — Follow-Up Review
 
-Use `send_input` with the saved reviewer id from Round 1:
+Use `followup_task` with the saved reviewer id from Round 1:
 
 ```text
-send_input:
+followup_task:
   target: [saved reviewer id from Round 1]
   message: |
     Here is the revised patent application after addressing your office action.

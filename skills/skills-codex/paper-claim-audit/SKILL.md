@@ -336,7 +336,7 @@ external `results/` dirs. The verifier resolves relative entries via
 ### Thread independence
 
 Every invocation uses a fresh reviewer agent. Never continue a prior audit via
-`send_input`. Do not accept prior audit outputs (PROOF_AUDIT, CITATION_AUDIT,
+`followup_task`. Do not accept prior audit outputs (PROOF_AUDIT, CITATION_AUDIT,
 EXPERIMENT_LOG, AUTO_REVIEW summaries) as input to this audit — the fresh
 thread preserves reviewer independence per
 `shared-references/reviewer-independence.md`.

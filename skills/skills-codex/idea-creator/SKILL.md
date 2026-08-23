@@ -18,7 +18,7 @@ Given a broad research direction from the user, systematically generate, validat
 - **MAX_PILOT_IDEAS = 3** — Pilot at most 3 ideas in parallel. Additional ideas are validated on paper only.
 - **MAX_TOTAL_GPU_HOURS = 8** — Total GPU budget for all pilots combined.
 - **REVIEWER_MODEL = `gpt-5.6-sol`** — Model used via a secondary Codex agent for brainstorming and review. Must be an OpenAI model (e.g., `gpt-5.6-sol`, `o3`, `gpt-4o`).
-- **REVIEWER_BACKEND = `codex`** — Default: Codex xhigh reviewer through `spawn_agent` / `send_input`. Use `--reviewer: oracle-pro` only when explicitly requested; if Oracle is unavailable, warn and fall back to Codex xhigh.
+- **REVIEWER_BACKEND = `codex`** — Default: Codex xhigh reviewer through `spawn_agent` / `followup_task`. Use `--reviewer: oracle-pro` only when explicitly requested; if Oracle is unavailable, warn and fall back to Codex xhigh.
 - **OUTPUT_DIR = `idea-stage/`** — All idea-stage outputs go here. Create the directory if it doesn't exist.
 
 > 💡 Override via argument, e.g., `/idea-creator "topic" — pilot budget: 4h per idea, 20h total`.
@@ -170,9 +170,9 @@ For each surviving idea, run a deeper evaluation:
 
 1. **Novelty check**: Use the `/novelty-check` workflow (multi-source search + GPT-5.6-Sol cross-verification) for each idea
 
-2. **Critical review**: Use GPT-5.6-Sol via `send_input` (same agent):
+2. **Critical review**: Use GPT-5.6-Sol via `followup_task` (same agent):
    ```text
-   send_input:
+   followup_task:
      target: [saved reviewer id from the earlier idea review]
      message: |
        Here are our top ideas after filtering:
@@ -346,4 +346,4 @@ implement                     → write code
 
 ## Review Tracing
 
-After each `spawn_agent` or `send_input` reviewer call, save the trace following `../shared-references/review-tracing.md`. Include the reviewer route, saved agent id, prompt summary, raw output path, selected ideas, and rejected ideas.
+After each `spawn_agent` or `followup_task` reviewer call, save the trace following `../shared-references/review-tracing.md`. Include the reviewer route, saved agent id, prompt summary, raw output path, selected ideas, and rejected ideas.

@@ -7,7 +7,7 @@
 > never as cross-family `accepted`. A Claude/Gemini overlay or a deterministic
 > verifier may record `accepted`. Where the mainline examples name Claude or
 > `mcp__codex__codex`, read them as current executor or fresh `spawn_agent`;
-> follow-up dialogue uses `send_input` only when continuity is intentional.
+> follow-up dialogue uses `followup_task` only when continuity is intentional.
 
 ## Core Principle
 

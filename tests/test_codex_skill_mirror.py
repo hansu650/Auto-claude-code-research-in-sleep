@@ -28,8 +28,8 @@ def has_spawn_agent_block(text: str) -> bool:
     return re.search(r"(?m)^\s*spawn_agent:", text) is not None
 
 
-def has_send_input_block(text: str) -> bool:
-    return re.search(r"(?m)^\s*send_input:", text) is not None
+def has_followup_task_block(text: str) -> bool:
+    return re.search(r"(?m)^\s*followup_task:", text) is not None
 
 
 def test_codex_skill_set_matches_mainline() -> None:
@@ -88,13 +88,14 @@ def test_codex_mirror_wiki_writers_wired() -> None:
     assert "add_claim" in rw, "mirror research-wiki must document the /proof-checker claim birth point (Hook 4)"
     # No mainline-convention bleed in the synced mirror files: no `.aris/tools` resolver,
     # no mainline `.aris/installed-skills.txt` manifest, and no bare `research_wiki.py <sub>`
-    # call (Codex global-install won't have it on PATH — must be `python3 "$WIKI_SCRIPT"`).
+    # call (Codex global-install won't have it on PATH — both interpreter and
+    # `$WIKI_SCRIPT` must be resolved before invocation).
     for name in ("result-to-claim", "idea-creator", "proof-checker", "research-wiki", "wiki-enrich"):
         t = read(CODEX_SKILLS / name / "SKILL.md")
         assert ".aris/tools" not in t, f"{name} mirror leaked the mainline .aris/tools resolver"
         assert ".aris/installed-skills.txt" not in t, f"{name} mirror leaked the mainline manifest (use installed-skills-codex.txt)"
         assert re.search(r"research_wiki\.py\s+(add_claim|add_edge|add_experiment|upsert_idea)", t) is None, \
-            f"{name} mirror has a bare research_wiki.py command (use python3 \"$WIKI_SCRIPT\")"
+            f"{name} mirror has a bare research_wiki.py command (resolve interpreter + $WIKI_SCRIPT)"
 
 
 def test_skill_inventory_check_passes() -> None:
@@ -133,8 +134,8 @@ def test_codex_reviewer_contract_partition() -> None:
     for name in codex_names:
         text = read(CODEX_SKILLS / name / "SKILL.md")
         spawn = has_spawn_agent_block(text)
-        send = has_send_input_block(text)
-        if spawn and send:
+        followup = has_followup_task_block(text)
+        if spawn and followup:
             multi_round.add(name)
         elif spawn:
             single_round.add(name)
@@ -147,17 +148,22 @@ def test_codex_reviewer_contract_partition() -> None:
     assert single_round.isdisjoint(multi_round)
     assert (single_round | multi_round | non_reviewer) == codex_names
 
+    for name in codex_names:
+        text = read(CODEX_SKILLS / name / "SKILL.md")
+        assert "send_input" not in text, \
+            f"{name} retains the removed Codex continuation API; use followup_task"
+
     for name in multi_round:
         text = read(CODEX_SKILLS / name / "SKILL.md")
         assert has_spawn_agent_block(text)
-        assert has_send_input_block(text)
+        assert has_followup_task_block(text)
         assert re.search(r"(?m)^\s*(target|id|agent_id):\s*\[saved", text) is not None
         assert "saved" in text or "same reviewer" in text or "same agent" in text
 
     for name in non_reviewer:
         text = read(CODEX_SKILLS / name / "SKILL.md")
         assert not has_spawn_agent_block(text)
-        assert not has_send_input_block(text)
+        assert not has_followup_task_block(text)
 
 
 def test_codex_review_assurance_is_explicit_and_honest() -> None:
@@ -229,18 +235,113 @@ def test_codex_review_assurance_is_explicit_and_honest() -> None:
             assert "acceptance_status: accepted" in text
             assert "acceptance_status: provisional" not in text
 
+    conditional_overlays = [
+        *CLAUDE_OVERLAY.glob("*/SKILL.md"),
+        GEMINI_OVERLAY / "paper-write" / "SKILL.md",
+        GEMINI_OVERLAY / "research-review" / "SKILL.md",
+    ]
+    for skill_file in conditional_overlays:
+        text = read(skill_file)
+        assert "Only after complete artifact transport" in text
+        assert "is never accepted" in text
+        assert "Every overlay trace/audit records" not in text
+        assert "`status` is exactly `completed`" in text
+        assert "`response` is a non-empty string" in text
+
+    assert "acceptance_status: null" in tracing
+    assert "an attempted route is not an accepted review" in tracing
+
     for skill_file in CLAUDE_OVERLAY.glob("*/SKILL.md"):
         text = read(skill_file)
         assert "spawn_agent" not in text, \
             f"{skill_file.relative_to(REPO_ROOT)} leaked the base Codex reviewer route"
         assert "send_input" not in text, \
             f"{skill_file.relative_to(REPO_ROOT)} leaked the base Codex continuation route"
+        assert "followup_task" not in text, \
+            f"{skill_file.relative_to(REPO_ROOT)} leaked the current Codex continuation route"
         assert "agent_id" not in text, \
             f"{skill_file.relative_to(REPO_ROOT)} must persist Claude threadId, not Codex agent_id"
         assert "GPT-5.5" not in text and "Codex/GPT" not in text, \
             f"{skill_file.relative_to(REPO_ROOT)} must not retain a non-Claude reviewer identity"
         assert "mcp__claude-review__review_start" in text
         assert "mcp__claude-review__review_status" in text
+
+    for skill_file in GEMINI_OVERLAY.glob("*/SKILL.md"):
+        text = read(skill_file)
+        assert "send_input" not in text and "followup_task" not in text, \
+            f"{skill_file.relative_to(REPO_ROOT)} leaked a Codex continuation route"
+
+
+def test_output_manifest_threshold_contract_is_consistent() -> None:
+    main_contract = read(MAIN_SKILLS / "shared-references" / "output-manifest.md")
+    codex_contract = read(CODEX_SKILLS / "shared-references" / "output-manifest.md")
+
+    for label, contract in (("mainline", main_contract), ("codex", codex_contract)):
+        assert "more than\n15 artifacts" in contract, \
+            f"{label} output-manifest contract must use the >15-artifact threshold"
+        assert "After writing any output file" not in contract
+
+    offenders: list[str] = []
+    roots = (MAIN_SKILLS, CODEX_SKILLS, CLAUDE_OVERLAY, GEMINI_OVERLAY)
+    for root in roots:
+        for skill_file in root.glob("*/SKILL.md"):
+            if "log every output to MANIFEST.md" in read(skill_file):
+                offenders.append(str(skill_file.relative_to(REPO_ROOT)))
+    assert not offenders, \
+        "skills contradict the >15-artifact manifest threshold:\n" + "\n".join(offenders)
+
+
+def test_base_reviewer_preserves_direct_artifact_review_contract() -> None:
+    text = read(CODEX_SKILLS / "research-review" / "SKILL.md")
+    required = (
+        "Resolve Primary Artifacts",
+        "Do **not** pre-digest",
+        "Primary artifacts (read these directly)",
+        "Send absolute artifact paths in Round 1",
+    )
+    for phrase in required:
+        assert phrase in text, f"base research-review lost: {phrase}"
+
+
+def test_external_reviewer_overlays_bundle_artifact_content() -> None:
+    required = (
+        "Build a Content-Faithful Artifact Bundle",
+        "complete content without summarizing",
+        "original file SHA-256",
+        "BEGIN/END ARTIFACT",
+        "paths alone are insufficient",
+    )
+    for overlay in (CLAUDE_OVERLAY, GEMINI_OVERLAY):
+        text = read(overlay / "research-review" / "SKILL.md")
+        for phrase in required:
+            assert phrase in text, f"{overlay.name} research-review lost: {phrase}"
+        assert "Gather Research Context" not in text
+        assert "compile a comprehensive briefing" not in text
+        assert "Primary artifacts (read these directly)" not in text
+        assert "- /absolute/path/to/paper-or-report" not in text
+        assert "REVIEW_UNAVAILABLE" in text and "`BLOCKED`" in text, \
+            f"{overlay.name} research-review must fail closed"
+        assert "never substitute the executor's own judgment" in text, \
+            f"{overlay.name} research-review must not self-review on bridge failure"
+        assert "\n  `BLOCKED`. Do not let the executor" not in text, \
+            f"{overlay.name} contains an orphaned base-prerequisite continuation"
+
+
+def test_paper_write_overlays_preserve_2026_and_text_lock_contracts() -> None:
+    required = (
+        "Respect User-Approved Text Locks",
+        "\\usepackage{neurips_2026}",
+        "\\usepackage{icml2026}",
+        "Never fall back to shell redirection",
+    )
+    for overlay in (CLAUDE_OVERLAY, GEMINI_OVERLAY):
+        text = read(overlay / "paper-write" / "SKILL.md")
+        for phrase in required:
+            assert phrase in text, f"{overlay.name} paper-write lost: {phrase}"
+        assert "neurips_2025" not in text
+        assert "icml2025" not in text
+        assert "cat << 'EOF'" not in text
+        assert "REVIEW_UNAVAILABLE" in text and "Before **every** review call" in text
 
 
 def test_overlay_boundaries_are_exact() -> None:
@@ -516,12 +617,28 @@ def test_codex_skill_instructions_use_codex_paths() -> None:
     assert ".agents/skills/paper-writing" in paper_writing
     assert "~/.claude/skills/paper-writing/SKILL.md" not in paper_writing
     assert "~/.claude/settings.json" not in paper_writing
-    assert 'python3 "$FIGURE_RENDERER"' in figure_spec
+    assert '"$PYTHON_CMD" "$FIGURE_RENDERER"' in figure_spec
+    assert 'python3 "$FIGURE_RENDERER"' not in figure_spec
+    assert "command -v python3" in figure_spec and "Get-Command python3, python" in figure_spec
     assert '[ -n "$FIGURE_RENDERER" ] ||' in figure_spec
     assert "figure_renderer.py not found" in figure_spec
+    assert "$FigureRenderer = $RendererCandidates" in figure_spec
+    assert '$SpecPath = "<spec.json>"' in figure_spec
+    assert '$OutputSvg = "<out.svg>"' in figure_spec
+    assert '$env:PYTHONIOENCODING = "utf-8"' in figure_spec
+    assert "Remove-Item Env:PYTHONIOENCODING" in figure_spec
+    assert "& $PythonCmd -X utf8 $FigureRenderer validate $SpecPath" in figure_spec
+    assert "& $PythonCmd -X utf8 $FigureRenderer render $SpecPath --output $OutputSvg" in figure_spec
+    assert "& $PythonCmd -X utf8 $FigureRenderer schema" in figure_spec
     assert "Codex-compatible event logger" in meta_optimize
     assert ".claude/settings.json" not in meta_optimize
     assert "templates/claude-hooks/meta_logging.json" not in meta_optimize
+
+
+def test_experiment_audit_passes_dataset_candidates_to_reviewer() -> None:
+    for root in (MAIN_SKILLS, CODEX_SKILLS):
+        text = read(root / "experiment-audit" / "SKILL.md")
+        assert "Dataset/GT candidates: [list paths]" in text
 
 
 def test_codex_experiment_queue_points_to_bundled_helpers() -> None:

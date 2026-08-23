@@ -52,12 +52,13 @@ fi
 EVIDENCE_CHECK=""
 [ -n "${ARIS_REPO:-}" ] && [ -f "$ARIS_REPO/tools/evidence_check.py" ] && EVIDENCE_CHECK="$ARIS_REPO/tools/evidence_check.py"
 [ -z "$EVIDENCE_CHECK" ] && [ -f tools/evidence_check.py ] && EVIDENCE_CHECK="tools/evidence_check.py"
+PYTHON_CMD="$(command -v python3 2>/dev/null || command -v python 2>/dev/null || true)"
 mkdir -p .aris
-if [ -n "$EVIDENCE_CHECK" ]; then
-  python3 "$EVIDENCE_CHECK" . --batch .aris/claims.json \
+if [ -n "$EVIDENCE_CHECK" ] && [ -n "$PYTHON_CMD" ]; then
+  "$PYTHON_CMD" "$EVIDENCE_CHECK" . --batch .aris/claims.json \
     > .aris/evidence_precheck.json 2>.aris/evidence_precheck.err || true
 else
-  echo "WARN: evidence_check.py unresolved; semantic review will still run" >&2
+  echo "WARN: evidence_check.py or Python unresolved; semantic review will still run" >&2
 fi
 ```
 
@@ -183,13 +184,15 @@ if research-wiki/ exists:
     [ -z "$WIKI_SCRIPT" ] && [ -f tools/research_wiki.py ] && WIKI_SCRIPT="tools/research_wiki.py"
     [ -z "$WIKI_SCRIPT" ] && [ -f ~/.codex/skills/research-wiki/research_wiki.py ] && WIKI_SCRIPT="$HOME/.codex/skills/research-wiki/research_wiki.py"
     [ -n "$WIKI_SCRIPT" ] || echo "WARN: research_wiki.py unreachable; skipping wiki writes (verdict still reported)." >&2
+    PYTHON_CMD="$(command -v python3 2>/dev/null || command -v python 2>/dev/null || true)"
+    [ -n "$PYTHON_CMD" ] || echo "WARN: Python unreachable; skipping wiki writes (verdict still reported)." >&2
 
     # 1. Create/refresh the experiment node FIRST (verdict OWNER → --update-on-exist so a
     #    re-judge overwrites the stale verdict). The supports/invalidates edges in #2 point
     #    FROM exp:<id> and add_edge does NOT verify node existence, so only add them if the
     #    experiment node was born (EXP_NODE_OK); otherwise skip the wiki edges.
     EXP_NODE_OK=0
-    [ -n "$WIKI_SCRIPT" ] && python3 "$WIKI_SCRIPT" add_experiment research-wiki/ \
+    [ -n "$WIKI_SCRIPT" ] && [ -n "$PYTHON_CMD" ] && "$PYTHON_CMD" "$WIKI_SCRIPT" add_experiment research-wiki/ \
          --slug "<exp_id>" --idea "idea:<active_idea>" \
          --verdict "<yes|partial|no>" --confidence "<high|medium|low>" \
          --date "<date>" --hardware "<hw>" --duration "<dur>" \
@@ -203,11 +206,11 @@ if research-wiki/ exists:
     if [ "$EXP_NODE_OK" = 1 ]:
         for each claim resolved by this verdict:
             if verdict == "yes":
-                python3 "$WIKI_SCRIPT" add_edge research-wiki/ --from "exp:<id>" --to "claim:<cid>" --type supports --evidence "<metric>"
+                "$PYTHON_CMD" "$WIKI_SCRIPT" add_edge research-wiki/ --from "exp:<id>" --to "claim:<cid>" --type supports --evidence "<metric>"
             elif verdict == "partial":
-                python3 "$WIKI_SCRIPT" add_edge research-wiki/ --from "exp:<id>" --to "claim:<cid>" --type supports --evidence "partial: <metric>"
+                "$PYTHON_CMD" "$WIKI_SCRIPT" add_edge research-wiki/ --from "exp:<id>" --to "claim:<cid>" --type supports --evidence "partial: <metric>"
             else:
-                python3 "$WIKI_SCRIPT" add_edge research-wiki/ --from "exp:<id>" --to "claim:<cid>" --type invalidates --evidence "<why>"
+                "$PYTHON_CMD" "$WIKI_SCRIPT" add_edge research-wiki/ --from "exp:<id>" --to "claim:<cid>" --type invalidates --evidence "<why>"
 
     # 3. Update idea outcome (raw markdown, helper-free — preserves the rich idea body)
     Update research-wiki/ideas/<idea_id>.md:
@@ -216,8 +219,8 @@ if research-wiki/ exists:
       - If positive: fill "Actual Outcome" and "Reusable Components"
 
     # 4. Rebuild + log (reflect the new edges; only if WIKI_SCRIPT resolved)
-    [ -n "$WIKI_SCRIPT" ] && python3 "$WIKI_SCRIPT" rebuild_query_pack research-wiki/
-    [ -n "$WIKI_SCRIPT" ] && python3 "$WIKI_SCRIPT" log research-wiki/ "result-to-claim: exp:<id> verdict=<verdict> for idea:<idea_id>"
+    [ -n "$WIKI_SCRIPT" ] && [ -n "$PYTHON_CMD" ] && "$PYTHON_CMD" "$WIKI_SCRIPT" rebuild_query_pack research-wiki/
+    [ -n "$WIKI_SCRIPT" ] && [ -n "$PYTHON_CMD" ] && "$PYTHON_CMD" "$WIKI_SCRIPT" log research-wiki/ "result-to-claim: exp:<id> verdict=<verdict> for idea:<idea_id>"
 
     # 5. Re-ideation suggestion
     Count failed/partial ideas since last /idea-creator run.
@@ -231,8 +234,8 @@ if research-wiki/ exists:
 - A single positive result on one dataset does not support a general claim. Be honest about scope.
 - If `confidence` is low, treat the judgment as inconclusive and add experiments rather than committing to a claim.
 - **Fail closed if the reviewer is unavailable.** Follow the capability fallback
-  in `reviewer-routing.md` (`gpt-5.6-sol` + `ultra` → `gpt-5.6-sol` + `xhigh`
-  → `gpt-5.5` + `xhigh`), and never downgrade on timeout, rate-limit, auth,
+  in `reviewer-routing.md` (`gpt-5.6-sol` + `ultra` → the same model + `xhigh`
+  only when `ultra` itself is unsupported), and never change models on timeout, rate-limit, auth,
   transport, server, or context errors. If no allowed pair succeeds, write a
   traced `BLOCKED` review record with the unavailable route and evidence paths, write
   `CLAIMS_FROM_RESULTS.md` containing only `verdict: REVIEW_UNAVAILABLE`, record

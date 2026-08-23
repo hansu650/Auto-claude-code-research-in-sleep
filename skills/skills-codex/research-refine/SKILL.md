@@ -477,7 +477,7 @@ Save to `refine-logs/round-N-refinement.md`:
 Send the revised proposal back to GPT-5.6-Sol in the **same agent**:
 
 ```
-send_input:
+followup_task:
   target: [saved from Phase 2]
   # inherits the agent's model/effort — do not re-send
   message: |
@@ -675,7 +675,7 @@ Suggested next step: /experiment-plan
 
 > Follow these shared protocols for all output files:
 > - **[Output Versioning Protocol](../../shared-references/output-versioning.md)** — write timestamped file first, then copy to fixed name
-> - **[Output Manifest Protocol](../../shared-references/output-manifest.md)** — log every output to MANIFEST.md
+> - **[Output Manifest Protocol](../../shared-references/output-manifest.md)** — maintain MANIFEST.md only when a run exceeds the protocol's >15-artifact threshold
 > - **[Output Language Protocol](../../shared-references/output-language.md)** — respect the project's language setting
 
 ## Key Rules
@@ -691,7 +691,7 @@ Suggested next step: /experiment-plan
 - **Review the mechanism, not the parts count.** A long module list is not novelty.
 - **Pushback is encouraged.** If reviewer feedback causes drift or unnecessary complexity, argue back with evidence.
 - **ALWAYS use `reasoning_effort: xhigh`** for all Codex review calls.
-- **Save `agent_id` from Phase 2** and use `send_input` for later rounds.
+- **Save `agent_id` from Phase 2** and use `followup_task` for later rounds.
 - **Do not fabricate results.** Only describe expected evidence and planned experiments.
 - **Be specific about compute and data assumptions.** Vague "we'll train a model" is not enough.
 - **Document everything.** Save every raw review, every anchor check, every simplicity check, and every major method change.

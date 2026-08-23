@@ -11,6 +11,7 @@ This is the expanded English counterpart to the detailed Chinese version. It is 
 - [Time Allocation and Reviewer Reading Order](#time-allocation-and-reviewer-reading-order)
 - [How to Write the Abstract](#how-to-write-the-abstract)
 - [Introduction Structure](#introduction-structure)
+- [How to Write the Conclusion](#how-to-write-the-conclusion)
 - [Sentence-Level Clarity](#sentence-level-clarity)
 - [Micro-Level Writing Tactics](#micro-level-writing-tactics)
 - [Word Choice and Precision](#word-choice-and-precision)
@@ -96,10 +97,12 @@ Most reviewers encounter the paper in this order:
 ## How to Write the Abstract
 
 Use the semantic moves and evidence rules in
-[`section-blueprints.md`](section-blueprints.md). They are intentionally not a fixed
-sentence template: a method, theory, diagnostic, and position paper need different
-subsets. Obey the venue's explicit word limit; when none is known, 150--200 words is a
-useful default target.
+[`section-blueprints.md`](section-blueprints.md). For an empirical AI method paper, use
+its **exact 10-sentence profile**: setting, limitation, reframing, method contract, two
+mechanism sentences, design boundary, primary evidence, secondary evidence or its
+boundary, and a scope-aware takeaway. This fixes the rhetorical logic, not the prose:
+every sentence must still be written from the paper's own Claim Ledger. Obey the venue's
+explicit word limit; when none is known, 150--200 words is a useful default target.
 
 At the prose level, a good abstract should:
 
@@ -130,7 +133,8 @@ In two-column conference papers, the Introduction is usually best at about 1-1.5
 It should satisfy the following:
 
 - the method should start appearing by page 2-3 at the latest,
-- the Introduction should include 2-4 contribution bullets,
+- an empirical AI method paper should include exactly three contribution bullets with
+  `2 / 3 / 3` sentences,
 - the central story should already make sense before technical detail arrives.
 
 ### Recommended Rhetorical Flow
@@ -148,7 +152,9 @@ It should satisfy the following:
    - What is the key insight?
 
 4. **Contribution bullets**
-   - 2-4 items, each mapped to a Claim ID and evidence location
+   - exactly three for the empirical AI method default, each mapped to a Claim ID and
+     evidence location
+   - 2 sentences for problem/formulation, 3 for method/mechanism, and 3 for evidence/scope
    - specific and falsifiable
    - role-based rather than forced into identical "We ..." openings
 
@@ -163,6 +169,16 @@ Use [`section-blueprints.md`](section-blueprints.md) for the contribution-role p
 Method contract, Conclusion mirror, and front-matter coverage index. The problem with a
 bullet such as “we perform extensive experiments” is not grammar; it is that a reviewer
 cannot cleanly agree, disagree, or challenge it.
+
+## How to Write the Conclusion
+
+For an empirical AI method paper, use the **exact 8-sentence profile** in
+[`section-blueprints.md`](section-blueprints.md): answer, mechanism, primary evidence,
+secondary evidence or its boundary, supported interpretation, limitation, practical
+takeaway, and broader technical significance. Keep the Claim Ledger order, but do not
+copy sentences from the Abstract or contribution bullets. A venue-mandated separate
+Limitations or Future Work section sits outside this count; do not append generic future
+work merely to make the ending longer.
 
 ## Sentence-Level Clarity
 
@@ -416,7 +432,7 @@ artifact supports. Prefer vector plots and avoid decorative titles inside figure
 |--------|-----|
 | Introduction longer than 1.5 pages | Move background to Related Work |
 | Method buried too late | Front-load the contribution and compress the intro |
-| Missing contribution bullets | Add 2-4 concrete claims |
+| Contribution structure drifts | Restore the empirical method default of 3 bullets with 2 / 3 / 3 sentences, or record an explicit override profile |
 | Experiments not tied to claims | State what each experiment tests |
 
 ### Writing Mistakes
@@ -456,11 +472,13 @@ artifact supports. Prefer vector plots and avoid decorative titles inside figure
 
 ### Structure
 
-- [ ] The Abstract uses the applicable semantic moves in `section-blueprints.md` and
-      obeys the venue word limit.
+- [ ] For an empirical AI method paper, the Abstract has exactly 10 sentences in the
+      role order defined by `section-blueprints.md` and obeys the venue word limit.
 - [ ] The Introduction stays within about 1-1.5 pages.
 - [ ] The method starts by page 2-3.
-- [ ] There are 2-4 concrete contribution bullets.
+- [ ] There are exactly 3 concrete contribution bullets with 2 / 3 / 3 sentences.
+- [ ] The Conclusion has exactly 8 sentences in the defined role order and introduces
+      no new claim.
 - [ ] Limitations are clearly stated.
 
 ### Writing

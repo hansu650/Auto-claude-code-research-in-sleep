@@ -10,13 +10,13 @@ All reviewer-heavy Codex base skills use the same default contract:
   **deep-audit** skills use `ultra` (`proof-checker`, `kill-argument` core threads, `research-review`,
   `experiment-audit`, `paper-claim-audit`, `result-to-claim`, `meta-apply`); **every other**
   reviewer call uses `xhigh` (multi-round loops and per-item fan-outs stay `xhigh` — a
-  follow-up `send_input` cannot change model/effort, and per-item `ultra` multiplies cost)
+  follow-up `followup_task` cannot change model/effort, and per-item `ultra` multiplies cost)
 - round 1: `spawn_agent`
-- follow-up rounds: `send_input`
+- follow-up rounds: `followup_task`
 
 This is the base default for `skills/skills-codex/`. No ARIS `— effort:` level or unrelated parameter changes the tier (ARIS `— effort: max` ≠ `reasoning_effort: max` — pipeline workload vs reviewer reasoning are different axes).
 
-**Capability fallback (first spawn of each tier only):** if `spawn_agent` errors explicitly on the effort enum (older codex-cli — applies only to the deep tier's `ultra`; `xhigh` predates 0.144.1), retry `reasoning_effort: xhigh`; if it errors explicitly on the model being unknown/unavailable to this account, retry `model: gpt-5.5` + `xhigh`. NEVER downgrade on timeout / rate-limit / auth / transport / server / context-length errors (risk of double-running). Never run a verdict-bearing review below `xhigh`; if no allowed pair works, report `REVIEW_UNAVAILABLE` — never substitute the executor's own judgment.
+**Capability fallback (first spawn of each tier only):** if `spawn_agent` errors explicitly on the effort enum (older codex-cli — applies only to the deep tier's `ultra`; `xhigh` predates 0.144.1), retry the same `gpt-5.6-sol` reviewer with `reasoning_effort: xhigh`. If `gpt-5.6-sol` is unknown or unavailable, report `REVIEW_UNAVAILABLE`; do not guess another model. NEVER retry with a different model on timeout / rate-limit / auth / transport / server / context-length errors (risk of double-running). Never run a verdict-bearing review below `xhigh`, and never substitute the executor's own judgment.
 
 > ⚠️ **Same-family by default — provisional, never accepted.** The executor here
 > is Codex (GPT family) and the reviewer is a fresh Codex agent from the same
@@ -60,7 +60,7 @@ spawn_agent:
 Save the returned reviewer id, then continue with:
 
 ```text
-send_input:
+followup_task:
   target: <saved reviewer id>
   message: |
     [follow-up materials only]
@@ -77,7 +77,7 @@ Routing rule:
 
 ```text
 If reviewer is omitted or reviewer=codex:
-  use spawn_agent / send_input with the Codex reviewer at the call's declared tier
+  use spawn_agent / followup_task with the Codex reviewer at the call's declared tier
 
 If reviewer=oracle-pro:
   check Oracle MCP availability

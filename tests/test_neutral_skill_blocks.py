@@ -142,10 +142,77 @@ def test_figure_backend_routing_is_explicit_and_variant_neutral() -> None:
 
 
 def test_new_shared_references_are_mirrored_byte_for_byte() -> None:
-    for name in ("section-blueprints.md", "publication-layout-gates.md"):
+    for name in (
+        "section-blueprints.md",
+        "writing-principles.md",
+        "publication-layout-gates.md",
+    ):
         main = (SKILLS / "shared-references" / name).read_bytes()
         codex = (SKILLS / "skills-codex" / "shared-references" / name).read_bytes()
         assert main == codex, f"shared reference mirror drift: {name}"
+
+
+def test_empirical_ai_method_front_matter_profile_is_fixed_and_mirrored() -> None:
+    blueprint = read(SKILLS / "shared-references" / "section-blueprints.md")
+    required_profile_lines = (
+        "### Empirical AI method default: exactly 10 sentences",
+        "### Empirical AI method default: exactly 3 bullets with 2 / 3 / 3 sentences",
+        "### Empirical AI method default: exactly 8 sentences",
+        "Never copy exemplar phrasing or invent an",
+    )
+    for line in required_profile_lines:
+        assert line in blueprint
+
+    abstract_roles = (
+        "**Setting:**",
+        "**Limitation:**",
+        "**Reframing:**",
+        "**Method contract:**",
+        "**Mechanism 1:**",
+        "**Mechanism 2:**",
+        "**Design boundary:**",
+        "**Primary evidence:**",
+        "**Secondary evidence:**",
+        "**Takeaway:**",
+    )
+    contribution_roles = (
+        "**Problem/formulation — 2 sentences:**",
+        "**Method/mechanism — 3 sentences:**",
+        "**Evidence/scope — 3 sentences:**",
+    )
+    conclusion_roles = (
+        "**Answer:**",
+        "**Mechanism:**",
+        "**Primary evidence:**",
+        "**Secondary evidence:**",
+        "**Interpretation:**",
+        "**Limitation:**",
+        "**Practical takeaway:**",
+        "**Significance:**",
+    )
+    role_blocks = (
+        (blueprint.split("## 2. Abstract Blueprint", 1)[1].split("## 3.", 1)[0], abstract_roles),
+        (blueprint.split("## 3. Introduction Contribution Blueprint", 1)[1].split("## 4.", 1)[0], contribution_roles),
+        (blueprint.split("## 5. Conclusion Blueprint", 1)[1].split("## 6.", 1)[0], conclusion_roles),
+    )
+    for block, roles in role_blocks:
+        positions = [block.index(role) for role in roles]
+        assert positions == sorted(positions), f"role order drifted: {roles}"
+
+    for path in VARIANTS["paper-plan"]:
+        text = read(path)
+        assert "Abstract = 10 sentences" in text
+        assert "`2 / 3 / 3` sentences" in text
+        assert "Conclusion = 8 sentences" in text
+        assert "roles and counts are fixed" in text
+        assert "content remain specific to the paper's Claim Ledger" in text
+
+    for path in VARIANTS["paper-write"]:
+        text = read(path)
+        assert "Abstract = exactly 10 sentences" in text
+        assert "exactly 3 bullets with `2 / 3 / 3` sentences" in text
+        assert "Conclusion = exactly 8 sentences" in text
+        assert "prose and content must come from the paper's Claim Ledger" in text
 
 
 def test_reference_ownership_and_routing() -> None:

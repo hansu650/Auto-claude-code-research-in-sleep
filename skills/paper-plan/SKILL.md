@@ -48,7 +48,7 @@ defensible outline.
 Keep the existing `insleep` workflow and outputs, but use the shared references below to improve the quality of the story and outline.
 
 - Read `../shared-references/writing-principles.md` when framing the one-sentence contribution, Abstract, Introduction, Related Work, or hero figure.
-- Read `../shared-references/section-blueprints.md` **mandatorily** when planning a claim-bearing Abstract, Introduction contribution list, Method/analysis section, or Conclusion. Its Claim Ledger and mirror contract supersede rigid sentence templates.
+- Read `../shared-references/section-blueprints.md` **mandatorily** when planning a claim-bearing Abstract, Introduction contribution list, Method/analysis section, or Conclusion. Its Claim Ledger, fixed-count front-matter profile, and mirror contract are canonical.
 - Read `../shared-references/publication-layout-gates.md` **mandatorily** when planning any figure or table.
 - Read `../shared-references/venue-checklists.md` before freezing the outline for a specific venue.
 - Only load these references when needed; do not paste their full contents into the working draft.
@@ -226,13 +226,27 @@ Theory papers should:
 6. Conclusion (0.5 pages)
 ```
 
+### Step 2.5: Fix the Front-Matter Sentence Profile
+
+Record the exact profile before planning individual sections. For an empirical AI method
+paper, the default is: Abstract = 10 sentences; Introduction contributions = exactly 3
+bullets with `2 / 3 / 3` sentences; Conclusion = 8 sentences. Use the sentence-role order
+in `section-blueprints.md`. The roles and counts are fixed, while wording and technical
+content remain specific to the paper's Claim Ledger.
+
+An explicit user instruction or venue rule may replace this default. A theory,
+diagnostic, position, or other non-method paper also needs a type-specific profile. In
+either case, write the replacement exact counts and role sequence into `PAPER_PLAN.md`
+before drafting; never leave the profile variable or silently change it later.
+
 ### Step 3: Section-by-Section Planning
 
 For each section, specify:
 
 ```markdown
 ### §0 Abstract
-- **Semantic moves**: [applicable setting, gap, reframing, method/analysis, component roles, evidence/scope, takeaway from `section-blueprints.md`]
+- **Sentence profile**: [empirical AI method default = exactly 10 sentences; otherwise the recorded exact override]
+- **Sentence roles**: [setting → limitation → reframing → method contract → mechanism 1 → mechanism 2 → design boundary → primary evidence → secondary evidence/boundary → takeaway]
 - **Canonical claims**: [Claim IDs represented]
 - **Headline evidence**: [canonical comparator/result/scope, if applicable]
 - **Estimated length**: [venue limit; otherwise 150-200 words]
@@ -244,7 +258,7 @@ For each section, specify:
 - **One-sentence contribution**: [the main takeaway of the paper]
 - **Approach overview**: [what we do differently]
 - **Key questions**: [the research questions this paper answers]
-- **Contributions**: [2-4 role-based bullets, specific and falsifiable, each mapped to Claim IDs and evidence]
+- **Contributions**: [empirical AI method default = exactly 3 role-based bullets with 2 / 3 / 3 sentences: problem/formulation, method/mechanism, evidence/scope; each mapped to Claim IDs and evidence]
 - **Results preview**: [the strongest result or comparison to surface early]
 - **Hero figure**: [describe what Figure 1 should show — MUST include clear comparison if applicable]
 - **Estimated length**: 1.5 pages
@@ -276,9 +290,10 @@ For each section, specify:
 - **Data source**: [which JSON files / experiment results]
 
 ### §5 Conclusion
-- **Claim-order mirror**: [problem/reframing → method/analysis → evidence → scope/limitations]
+- **Sentence profile**: [empirical AI method default = exactly 8 sentences; otherwise the recorded exact override]
+- **Sentence roles**: [answer → mechanism → primary evidence → secondary evidence/boundary → interpretation → limitation → practical takeaway → significance]
 - **No-new-claim check**: [no new method, number, comparator, dataset, protocol, or claim]
-- **Future Work**: [separate paragraph derived from a stated limitation, when space permits]
+- **Separate venue sections**: [Limitations/Future Work only when required, outside the eight-sentence Conclusion count]
 - **Estimated length**: 0.5 pages
 ```
 
@@ -343,6 +358,7 @@ mcp__codex__codex:
     6. Front-matter strength — are the abstract, introduction, and hero-figure contract strong enough for skim-reading reviewers?
     7. Claim mirroring — do Abstract, contribution bullets, body, evidence, and Conclusion preserve the same comparator, result, protocol, and scope?
     8. Publication layout — does every figure/table have a width, placement, preservation, caption, and priority contract?
+    9. Sentence-profile compliance — are the planned counts and roles exact (empirical AI method default: Abstract 10, contributions 2/3/3, Conclusion 8)?
 
     For each weakness, suggest the MINIMUM fix.
     Be specific and actionable — "add X" not "consider more experiments".
@@ -361,6 +377,7 @@ Save the final outline to `PAPER_PLAN.md` in the project root:
 **One-sentence contribution**: [single-sentence statement of the paper's core takeaway]
 **Venue**: [target venue]
 **Type**: [empirical/theory/method]
+**Front-matter sentence profile**: [empirical AI method default: Abstract 10; contributions 2 / 3 / 3; Conclusion 8, or an explicit exact override]
 **Date**: [today]
 **Page budget**: [MAX_PAGES] pages (main body to Conclusion end, excluding references & appendix)
 **Section count**: [N] (must match the number of section files that will be created)
@@ -400,6 +417,7 @@ Save the final outline to `PAPER_PLAN.md` in the project root:
 - **Venue-specific norms** — ML conferences (ICLR/NeurIPS/ICML) use `natbib` (`\citep`/`\citet`); **IEEE venues use `cite` package (`\cite{}`, numeric style)**
 - **The Canonical Claim Ledger is the backbone** — every claim must map to evidence, every experiment must support a claim, and no duplicate claim store may drift from it
 - **Front-load the story** — the outline should make the contribution clear in the title, abstract, introduction, and hero figure before the reader reaches the full method
+- **Freeze sentence logic before drafting** — counts and roles are fixed by the active profile; they never justify invented content
 - **Figures need detailed descriptions** — especially the hero figure, which must clearly specify comparisons and visual expectations
 - **Section count is flexible** — 5-8 sections depending on paper type. Don't force content into a rigid 5-section template.
 
@@ -411,5 +429,5 @@ Outline methodology inspired by [Research-Paper-Writing-Skills](https://github.c
 
 > Follow these shared protocols for all output files:
 > - **[Output Versioning Protocol](../shared-references/output-versioning.md)** — write timestamped file first, then copy to fixed name
-> - **[Output Manifest Protocol](../shared-references/output-manifest.md)** — log every output to MANIFEST.md
+> - **[Output Manifest Protocol](../shared-references/output-manifest.md)** — maintain MANIFEST.md only when a run exceeds the protocol's >15-artifact threshold
 > - **[Output Language Protocol](../shared-references/output-language.md)** — respect the project's language setting

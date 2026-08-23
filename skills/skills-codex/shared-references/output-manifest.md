@@ -1,6 +1,14 @@
 # Output Manifest Protocol
 
-After writing any output file, append an entry to `MANIFEST.md` in the project root.
+Maintain a `MANIFEST.md` in the project root **only when a run produces more than
+15 artifacts**. At 15 or fewer artifacts, do not create one: a manifest for a
+handful of files is itself a duplicate index that must be kept in sync (see
+[`output-composition.md`](output-composition.md)). When the threshold is met,
+append one entry per output file as below.
+
+> Threshold rationale: the original "log every output" rule created clutter in
+> small runs. A manifest earns its keep only when an index materially improves
+> navigation.
 
 ## Format
 

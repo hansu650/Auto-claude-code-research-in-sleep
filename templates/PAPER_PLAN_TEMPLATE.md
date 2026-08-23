@@ -6,6 +6,7 @@
 - **Title**: [Title]
 - **Venue**: [ICLR / NeurIPS / ICML]
 - **One-sentence contribution**: [Core takeaway]
+- **Front-matter sentence profile**: [Empirical AI method default: Abstract 10; contribution bullets 2 / 3 / 3; Conclusion 8, or an explicit exact override]
 
 ## Canonical Claim Ledger
 | Claim ID | Role | Exact claim | Comparator or N/A | Evidence (experiment/table/figure/theorem/proof) | Scope/data access | Selection/training/adaptation or N/A | Limitation | Forbidden expansion |
@@ -21,11 +22,15 @@
 
 ## Section Plan
 
+### 0. Abstract (exactly 10 sentences for the empirical AI method default)
+- [Setting → limitation → reframing → method contract → mechanism 1 → mechanism 2 → design boundary → primary evidence → secondary evidence/boundary → takeaway]
+
 ### 1. Introduction (~1.5 pages)
 - **What**: [contribution]
 - **Why**: [importance]
 - **How**: [approach]
 - **Result**: [strongest number]
+- **Contribution bullets**: [exactly 3 with 2 / 3 / 3 sentences: problem/formulation, method/mechanism, evidence/scope]
 
 ### 2. Related Work (~1 page)
 - [Group 1]: [papers, gap]
@@ -38,8 +43,8 @@
 ### 4. Experiments (~3 pages)
 - [Setup, main results, ablation]
 
-### 5. Conclusion (~0.5 pages)
-- [Summary, limitations, future]
+### 5. Conclusion (~0.5 pages; exactly 8 sentences for the empirical AI method default)
+- [Answer → mechanism → primary evidence → secondary evidence/boundary → interpretation → limitation → practical takeaway → significance]
 
 ## Figure/Table Layout Contract
 | Label | Kind | Width class | Preferred placement | Must preserve | Caption budget | Priority |

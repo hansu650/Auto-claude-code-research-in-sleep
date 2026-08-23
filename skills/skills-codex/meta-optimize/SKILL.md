@@ -115,23 +115,23 @@ ranked table should read as sub-fixes for this one named constraint.
 Append the verdict to the append-only ledger `.aris/meta/bottleneck_log.jsonl`
 (never edit or delete prior lines — succession history is the point):
 
-```bash
-mkdir -p .aris/meta
-# json.dumps, NOT hand-interpolated shell strings: bottleneck/evidence are
-# natural language — a stray quote must not break the JSONL (or the shell).
-python3 - <<'PY'
-import json, datetime
-entry = {
-    "ts": datetime.datetime.now().astimezone().isoformat(timespec="seconds"),
-    "cycle": 3,
-    "bottleneck": "verification quality",
-    "evidence": "review rounds plateau at 6/10 while tool failures are rare",
-    "top_patch_ids": ["P1", "P2"],
+```powershell
+New-Item -ItemType Directory -Force .aris/meta | Out-Null
+# Use a structured serializer, not hand-interpolated JSON strings: a quote in
+# natural-language evidence must not corrupt the JSONL record.
+$entry = [ordered]@{
+    ts = (Get-Date).ToString('o')
+    cycle = 3
+    bottleneck = 'verification quality'
+    evidence = 'review rounds plateau at 6/10 while tool failures are rare'
+    top_patch_ids = @('P1', 'P2')
 }
-with open(".aris/meta/bottleneck_log.jsonl", "a", encoding="utf-8") as fh:
-    fh.write(json.dumps(entry, ensure_ascii=False) + "\n")
-PY
+($entry | ConvertTo-Json -Compress) | Add-Content -Encoding utf8 .aris/meta/bottleneck_log.jsonl
 ```
+
+On POSIX hosts, perform the same append with a resolved `python3`/`python`
+launcher per `shared-references/integration-contract.md`; do not assume a bare
+`python3` command or reuse the PowerShell snippet verbatim.
 
 On the next run, read the last line first and open the report by stating
 whether that bottleneck was resolved and what it has moved to.
@@ -316,7 +316,7 @@ Inspired by [Meta-Harness](https://arxiv.org/abs/2603.28052) (Lee et al., 2026) 
 
 > Follow these shared protocols for all output files:
 > - **[Output Versioning Protocol](../shared-references/output-versioning.md)** — write timestamped file first, then copy to fixed name
-> - **[Output Manifest Protocol](../shared-references/output-manifest.md)** — log every output to MANIFEST.md
+> - **[Output Manifest Protocol](../shared-references/output-manifest.md)** — maintain MANIFEST.md only when a run exceeds the protocol's >15-artifact threshold
 > - **[Output Language Protocol](../shared-references/output-language.md)** — respect the project's language setting
 
 ## Review Tracing

@@ -17,6 +17,12 @@ each skill re-encodes provider quirks and every "environment is ready" claim is
 vibes. The classic failure this prevents: agent says "env ready", the overnight
 run dies at `import flash_attn`, 8 GPUs idle until morning.
 
+## Local environment and authorization
+
+Apply the user's machine and task isolation preferences before choosing a provider or copying commands below. Discover the project's requirements and available environment manager first. Use a task-specific environment when the user's policy requires one; do not infer permission to modify a shared base environment or system PATH from an installation example. Keep machine-specific paths and package-manager preferences in the user's own configuration.
+
+The spec hash permits reuse only inside the same task/environment boundary. Matching dependencies do not authorize reuse across independent tasks. Provider choice, configuration files and resource availability do not by themselves authorize paid compute or instance destruction; reuse explicit session authorization within its stated scope and limits.
+
 ## 1. Provider shapes — recognize, don't choose
 
 You are rarely choosing a shape; you are recognizing which one this provider
@@ -92,7 +98,7 @@ gotcha: <any diagnosis-table row hit on THIS provider>
 ```
 
 Spec changed → hash changes → **cache miss**: the ledger entry no longer
-matches and the env must be rebuilt (or a new block added). Spec unchanged →
+matches and the env must be rebuilt (or a new block added). Spec unchanged within the same task/environment boundary →
 warm-reuse without rebuilding or re-validating tier 1–2. This turns "I think
 the env is the same as last week" into a string comparison. Note `.aris/` is
 gitignored by convention — the ledger is **project-local and uncommitted** by
@@ -111,8 +117,7 @@ the block format is the contract, not the path.
    read-only cache". Keep the witness command in the spec's `smoke.gpu_tests`
    with an `expect:` regex so the SAME probe runs on every backend. Cheap —
    run on every build.
-3. **Agent-follows-doc** — the validation that actually matters and the one
-   that's easy to skip. Spawn a FRESH subagent that gets ONLY: the compute
+3. **Agent-follows-doc** — an independent usability check when a new or materially changed setup procedure needs validation. When delegation is available and authorized, spawn a FRESH subagent that gets ONLY: the compute
    skill's doc, the provider's ledger entry, and the documented invocation.
    It must run the invocation **verbatim** — no improvisation, no fixing —
    and report every point where the doc's claim and reality diverge. This is
@@ -122,8 +127,7 @@ the block format is the contract, not the path.
    (it walks through on hidden knowledge the doc never wrote down — same
    principle as `acceptance-gate.md`: the writer never acquits its own
    artifact); the fresh agent's stuck-point IS the doc's lie. Expensive —
-   reserve for the two moments doc and env can drift: **after any env rebuild
-   or doc edit, and before declaring an env ready**.
+   use for a first provider setup, material invocation changes, or recurring setup failures. A spelling edit or an unchanged, already validated environment does not require another agent run. If unavailable, report this tier as unverified; do not claim an independent pass.
 
 ## 5. Diagnosis table (symptom → layer → fix)
 
@@ -148,12 +152,10 @@ ledger `gotcha:` line, so the next agent doesn't rediscover it.
 
 ## How compute skills use this
 
-- **Before building**: read the provider's ledger. The env — or a near-match
-  to extend — may already exist; an unchanged hash means skip the rebuild.
+- **Before building**: read the provider's ledger. Within this same task, an environment or near-match may already exist; reuse a matching validated build. For an independent Python task, create its own environment as required above.
 - **When building**: write the spec first (§2), render it for the shape (§1),
   run tier-1/2 validation (§4), append the ledger block (§3).
-- **Before declaring ready** (and after any rebuild/doc edit): run the
-  agent-follows-doc pass (§4.3).
+- **Before declaring ready**: ensure tier-1/2 evidence matches the current build and intended invocation. Apply §4.3 when its conditions hold, report the verified tiers, and rerun only checks affected by changes.
 - **On failure**: diagnosis table (§5) before patching; record provider-true
   gotchas in the ledger.
 

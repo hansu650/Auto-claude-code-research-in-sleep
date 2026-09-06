@@ -1,6 +1,6 @@
 ---
 name: meta-optimize
-description: "Analyze ARIS usage logs and propose optimizations to SKILL.md files, reviewer prompts, and workflow defaults. Outer-loop harness optimization inspired by Meta-Harness (Lee et al., 2026). Use when user says \"优化技能\", \"meta optimize\", \"improve skills\", \"分析使用记录\", or wants to optimize ARIS's own harness components based on accumulated experience."
+description: "Analyze accumulated ARIS workflow event logs to propose evidence-backed changes to its skills, reviewer prompts and defaults. Use for meta-optimize or requests to optimize the ARIS harness from usage history. General AGENTS.md or skill editing without a log-analysis objective belongs to instruction maintenance, not this workflow."
 argument-hint: "[target-skill-or-all]"
 allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob
 ---
@@ -296,9 +296,9 @@ The log at `.aris/meta/events.jsonl` contains JSONL records with these shapes:
 
 This skill is NOT part of the standard W1→W1.5→W2→W3→W4 pipeline. It is a **maintenance workflow** with three trigger mechanisms:
 
-1. **Passive logging** (always on): Claude Code hooks record events to `.aris/meta/events.jsonl` automatically during normal usage. Zero user effort.
+1. **Passive logging** (Claude Code mainline only): configured hooks can record events to `.aris/meta/events.jsonl`. This Codex installation does not create those hooks; first verify the external logger or exported log described in Prerequisites.
 
-2. **Automatic readiness check** (SessionEnd hook): When a Claude Code session ends, `check_ready.sh` counts skill invocations since the last `/meta-optimize` run. If ≥5 new invocations have accumulated, it prints a reminder:
+2. **Automatic readiness check** (only where the SessionEnd hook is installed): When that Claude Code session ends, `check_ready.sh` counts skill invocations since the last `/meta-optimize` run. If ≥5 new invocations have accumulated, it prints a reminder:
    ```
    📊 ARIS has logged 8 skill runs since last optimization. Run /meta-optimize to check for improvement opportunities.
    ```

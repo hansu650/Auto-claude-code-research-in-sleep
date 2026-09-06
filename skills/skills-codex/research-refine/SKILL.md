@@ -92,7 +92,7 @@ Before starting any phase, check whether a previous run left a checkpoint:
    - If it exists and `status` is `"in_progress"` but `timestamp` is older than 24 hours → fresh start
    - If it exists and `status` is `"in_progress"` within 24 hours → resume
 2. **On resume**:
-   - Read all existing `refine-logs/round-*.md` files and `score-history.md`
+   - Read `REFINE_STATE.json`, the latest complete anchored proposal, latest review, and `score-history.md`; open older round files only to resolve missing context, a regression, or conflicting decisions.
    - Recover `agent_id` for reviewer continuity
    - Resume from the next phase based on the saved `phase`
 3. **On fresh start**, ensure `refine-logs/` exists and proceed to Phase 0.
@@ -674,9 +674,9 @@ Suggested next step: /experiment-plan
 ## Output Protocols
 
 > Follow these shared protocols for all output files:
-> - **[Output Versioning Protocol](../../shared-references/output-versioning.md)** — write timestamped file first, then copy to fixed name
-> - **[Output Manifest Protocol](../../shared-references/output-manifest.md)** — log every output to MANIFEST.md
-> - **[Output Language Protocol](../../shared-references/output-language.md)** — respect the project's language setting
+> - **[Output Versioning Protocol](../shared-references/output-versioning.md)** — write timestamped file first, then copy to fixed name
+> - **[Output Manifest Protocol](../shared-references/output-manifest.md)** — maintain MANIFEST.md only when a run exceeds the protocol's >15-artifact threshold
+> - **[Output Language Protocol](../shared-references/output-language.md)** — respect the project's language setting
 
 ## Key Rules
 

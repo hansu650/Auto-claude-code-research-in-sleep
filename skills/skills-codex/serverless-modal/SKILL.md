@@ -1,6 +1,6 @@
 ---
 name: serverless-modal
-description: "Run GPU workloads on Modal — training, fine-tuning, inference, batch processing. Zero-config serverless: no SSH, no Docker, auto scale-to-zero. Use when user says \"modal run\", \"modal training\", \"modal inference\", \"deploy to modal\", \"need a GPU\", \"run on modal\", \"serverless GPU\", or needs remote GPU compute."
+description: "Run training, fine-tuning, inference or batch GPU workloads on Modal. Use when the user selects Modal/serverless Modal, asks to deploy to Modal, or an established project uses that provider. Generic remote-GPU needs require provider selection before invoking this workflow."
 argument-hint: "[task-description]"
 allowed-tools: Bash(*), Read, Grep, Glob, Edit, Write
 ---
@@ -62,14 +62,14 @@ CPU: $0.047/core/hr | RAM: $0.008/GiB/hr (GPU typically 90%+ of total cost)
 
 ## !! Cost Estimation Required !!
 
-Before EVERY run, estimate cost and show to user for confirmation.
+Before the first paid run, estimate cost using current provider pricing and check the user's authorization. Reuse an explicitly approved provider, workload and total budget for subsequent runs within those limits; track cumulative cost. Re-estimate and ask before exceeding the budget or materially changing the workload/provider. Configuration or available credits alone do not authorize spending.
 
 Key insights:
 - Inference bottleneck is **memory bandwidth**, not compute → high-bandwidth GPUs are often cheaper overall
 - 7-8B BF16 inference needs **~22GB VRAM** (weights 15G + KV cache 1G + overhead), T4 (16GB) insufficient
 - H100 is often **cheaper than L4** for benchmarks (11x faster but only 5x more expensive)
 
-### Cost Estimation Template (required before every run)
+### Cost Estimation Template (first run or material change)
 
 ```
 Cost estimate (Modal):

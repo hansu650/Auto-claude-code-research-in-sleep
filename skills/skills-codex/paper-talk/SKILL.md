@@ -53,7 +53,7 @@ These are non-negotiable across all phases:
 - **ASPECT_RATIO = `16:9`** — Inherited by `/paper-slides`.
 - **STYLE_PRESET** — `generic` if not passed; `why-rf` and venue presets supported by `/slides-polish`.
 - **REFERENCE_VISUAL** — Required when `assurance ≥ polished`. The Beamer compile of this talk is an acceptable self-reference; an external academic talk PDF is preferred when the user wants visual alignment beyond defaults.
-- **AUTO_PROCEED = false** — Each major phase pauses for user approval. Set `true` only when explicitly requested.
+- **AUTO_PROCEED = true** — Complete the requested talk artifacts using existing decisions. Set `false` when the user requests staged review; pause for consequential missing input, not routine phase transitions.
 
 ## Inputs
 
@@ -119,17 +119,13 @@ The audit JSON files follow the shared 6-state schema; see
    - python-pptx (`python3 -c 'import pptx'`).
 3. **Resolve overrides** from `$ARGUMENTS`: `talk_type`, `minutes`, `assurance`, `reference`, `style`, `effort`.
 4. **State init**: write `.aris/paper-talk/PIPELINE_STATE.json` with `phase: 0`, timestamp, all resolved overrides.
-5. **Resume mode**: if `slides/SLIDE_OUTLINE.md` exists and `PIPELINE_STATE.json` shows recent in-progress work, prompt the user — resume from last phase or start fresh.
+5. **Resume mode**: if the saved state and outline match the current request and inputs, resume from the last valid phase. Ask only if incompatible scope or conflicting artifacts prevent choosing a safe continuation.
 
 ### Phase 1: Slide Outline (Checkpoint)
 
-Goal: produce or accept a `slides/SLIDE_OUTLINE.md` that the user signs off
-on before any deck-building happens.
+Goal: produce or reuse a `slides/SLIDE_OUTLINE.md` that matches the requested audience, duration and research claims.
 
-If `slides/SLIDE_OUTLINE.md` already exists, present its summary (slide
-count, time budget, claim-per-slide map) to the user and ask:
-
-> "Use existing outline (Y/n)? Modify? Regenerate?"
+If `slides/SLIDE_OUTLINE.md` already exists, check it against the current request and inputs, summarize it, and reuse it when compatible. Ask only about a substantive conflict that cannot be resolved from session decisions.
 
 Otherwise, delegate to `/paper-slides` Phase-1 only (content extraction +
 slide outline generation). `/paper-slides` writes the outline into its own
@@ -145,14 +141,12 @@ The outline must contain, per slide:
 - Transition cue.
 - Speaker note seed (1-3 sentences; expanded in Phase 2).
 
-**Checkpoint**: present the outline. Default behavior: pause for user
-approval. Set `AUTO_PROCEED = true` only when the user is explicitly
-running unattended.
+**Checkpoint behavior:** summarize the result and continue within the requested draft scope. Pause only if `AUTO_PROCEED=false` was requested or a specific missing fact or decision materially changes the deliverable; reuse decisions already supplied.
 
 ### Phase 2: Build Baseline Deck
 
-Invoke `/paper-slides` to generate Beamer source + PPTX from the approved
-outline.
+Invoke `/paper-slides` to generate Beamer source + PPTX from the selected
+outline. Pass through `AUTO_PROCEED` and existing decisions so the child does not repeat the same checkpoint.
 
 ```
 /paper-slides "<paper-dir>" — talk_type: <T> — minutes: <N> — venue: <V> — aspect: 16:9 — notes: true

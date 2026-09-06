@@ -1,6 +1,6 @@
 ---
 name: patent-pipeline
-description: "Full patent drafting pipeline from invention description to jurisdiction-formatted filing documents. Supports CN (CNIPA), US (USPTO), EP (EPO). Supports invention patents and utility models. Use when user says \"写专利\", \"patent pipeline\", \"专利申请\", \"draft patent\", \"写权利要求书\", or wants to draft a complete patent application."
+description: "Draft a complete patent application from an invention disclosure through prior-art analysis, claims, specification and jurisdiction formatting for CN, US or EP. Use for a full patent drafting pipeline or 完整专利申请草稿. A claims-only request uses claims-drafting; a specification-only request uses specification-writing."
 argument-hint: "[invention-description — jurisdiction]"
 allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, WebSearch, WebFetch, Skill
 ---
@@ -40,7 +40,7 @@ Patents are about **protecting inventions** (legal scope), not publishing result
 - **PATENT_TYPE = `invention`** — `invention` (发明专利, 20 year protection) or `utility_model` (实用新型, CN only, 10 year protection, apparatus claims only). Override via argument.
 - **REVIEWER_MODEL = `gpt-5.6-sol`** — Model used via Codex MCP for examiner-style review.
 - **MAX_REVIEW_ROUNDS = 2** — Maximum review-revision cycles.
-- **AUTO_PROCEED = false** — At each checkpoint, **always wait for explicit user confirmation**. Patent applications require inventor judgment at every stage. Set `true` only if user explicitly requests autonomous mode.
+- **AUTO_PROCEED = true** — Continue preparing the requested draft using supplied invention facts and jurisdiction. Set `false` for staged review. Ask when missing inventor facts, unresolved claim-scope alternatives or a new legal commitment materially affect the draft; drafting does not authorize filing.
 - **LANGUAGE = `auto`** — Output language. Auto-detected from jurisdiction: CN->Chinese, US->English, EP->English. Override explicitly if needed.
 - **OUTPUT_DIR = `patent/`** — Directory for generated patent files.
 - **OUTPUT_FORMAT = `markdown`** — Draft format. `markdown` for review, `docx` for filing-ready.
@@ -160,7 +160,7 @@ Prior art search complete:
 Ready to proceed with invention structuring?
 ```
 
-**⛔ STOP HERE and wait for user response.** Do NOT auto-proceed unless AUTO_PROCEED=true.
+**Checkpoint behavior:** summarize the result and continue within the requested draft scope. Pause only if `AUTO_PROCEED=false` was requested or a specific missing fact or decision materially changes the deliverable; reuse decisions already supplied.
 
 Options:
 - Reply **"go"** -> proceed to Phase 2
@@ -204,7 +204,7 @@ Invention structured:
 The claims define the legal scope of protection. Please review before proceeding to specification.
 ```
 
-**⛔ STOP HERE and wait for user response.** Do NOT auto-proceed unless AUTO_PROCEED=true.
+**Checkpoint behavior:** summarize the result and continue within the requested draft scope. Pause only if `AUTO_PROCEED=false` was requested or a specific missing fact or decision materially changes the deliverable; reuse decisions already supplied.
 
 Options:
 - Reply **"go"** -> proceed to Phase 3
@@ -237,7 +237,7 @@ Specification written:
 Ready to proceed to review?
 ```
 
-**⛔ STOP HERE and wait for user response.**
+**Checkpoint behavior:** summarize the result and continue within the requested draft scope. Pause only if `AUTO_PROCEED=false` was requested or a specific missing fact or decision materially changes the deliverable; reuse decisions already supplied.
 
 **State**: Write `PATENT_STATE.json` with `phase: 3`.
 
@@ -318,7 +318,7 @@ This compiles the application into the target jurisdiction format(s).
 - Claims must be supported by the specification (written description requirement).
 - Each jurisdiction has strict format requirements -- do not mix formats.
 - Utility model (实用新型) applies ONLY to CN jurisdiction and ONLY covers apparatus/device claims.
-- AUTO_PROCEED defaults to false -- patent applications require human review at every phase. Sub-skills inherit this flag: when AUTO_PROCEED=false, sub-skills present results and wait at their own internal checkpoints too.
+- Sub-skills inherit `AUTO_PROCEED`, supplied inventor facts and resolved choices. Do not repeat a parent checkpoint for the same decision. Preserve unresolved substantive questions and deliver the draft for inventor/attorney review.
 - The patent pipeline produces drafts for attorney review, not final filing documents.
 - Large file handling: if a Write operation fails, retry with Bash `cat <<'EOF'` heredoc.
 - Never include experimental results or empirical evaluations in the specification.

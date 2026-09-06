@@ -1,6 +1,6 @@
 ---
 name: "research-lit"
-description: "Search and analyze research papers, find related work, summarize key ideas. Use when user says \"find papers\", \"related work\", \"literature review\", \"what does this paper say\", or needs to understand academic papers."
+description: "Search and synthesize academic literature across papers for a research topic, related-work comparison or literature review. Use for 找相关论文, 文献综述, find papers or compare research approaches. For explaining one supplied paper, prefer a single-paper reader such as alphaxiv or deepxiv unless broader comparison is requested."
 ---
 
 # Research Literature Review
@@ -36,7 +36,7 @@ This skill checks multiple sources **in priority order**.
 
 Parse `$ARGUMENTS` for a `— sources:` directive:
 - **If `— sources:` is specified**: Only search the listed sources (comma-separated). Valid values: `zotero`, `obsidian`, `local`, `web`, `semantic-scholar`, `deepxiv`, `exa`, `gemini`, `openalex`, `all`.
-- **If not specified**: Default to `all` — search every available source in priority order (`semantic-scholar`, `deepxiv`, `exa`, `gemini`, and `openalex` are excluded from `all`; they must be explicitly listed).
+- **If not specified**: Use the `all` source pool in priority order, starting with the relevant available sources. Expand when freshness, coverage or evidence gaps require it; stop when the requested synthesis is supported. An explicit `— sources: all` requests every available default source. `semantic-scholar`, `deepxiv`, `exa`, `gemini`, and `openalex` remain opt-in.
 
 Examples:
 ```
@@ -72,7 +72,7 @@ Examples:
 | 8 | **Gemini** (MCP / CLI) | `gemini` | `mcp__gemini-cli__ask-gemini` is available, or `gemini` CLI is installed | AI-powered broad literature discovery that decomposes topics into sub-problems, aliases, and variants. **Only runs when explicitly requested** |
 | 9 | **OpenAlex** | `openalex` | `$OPENALEX_FETCHER` resolves (canonical name `openalex_fetch.py`, per integration-contract §2 Codex chain) and Python `requests` is importable | Open citation graph with institutional affiliations, funding data, and broad work metadata. **Only runs when explicitly requested** |
 
-> If the user explicitly requests Zotero or Obsidian and that source is not configured, stop and tell the user how to enable it. Only sources that were not requested may be skipped silently.
+> If an explicitly requested source is unavailable, identify the missing source and required setup. Continue other requested sources or useful source-independent work, but mark coverage incomplete; do not silently substitute a source when the user required an exclusive source.
 
 ## Workflow
 
@@ -90,7 +90,7 @@ same-family provisional. See
 
 ### Step 0a: Search Zotero Library (if available)
 
-**If the user explicitly requested Zotero and the Zotero MCP is not configured, stop and ask the user to configure it. Otherwise skip this step entirely.**
+**If the user explicitly requested Zotero and the Zotero MCP is not configured, stop and ask the user to configure it for this source; continue other authorized sources and mark the missing coverage. Otherwise skip this step entirely.**
 
 Try calling a Zotero MCP tool (e.g., search). If it succeeds:
 
@@ -108,7 +108,7 @@ Try calling a Zotero MCP tool (e.g., search). If it succeeds:
 
 ### Step 0b: Search Obsidian Vault (if available)
 
-**If the user explicitly requested Obsidian and the Obsidian MCP is not configured, stop and ask the user to configure it. Otherwise skip this step entirely.**
+**If the user explicitly requested Obsidian and the Obsidian MCP is not configured, stop and ask the user to configure it for this source; continue other authorized sources and mark the missing coverage. Otherwise skip this step entirely.**
 
 Try calling an Obsidian MCP tool (e.g., search). If it succeeds:
 
@@ -453,6 +453,6 @@ If the wiki path or format is unclear, ask before writing. Do not invent a wiki 
 - Distinguish between peer-reviewed and preprints
 - Be honest about limitations of each paper
 - Note if a paper directly competes with or supports our approach
-- If a user-requested Zotero or Obsidian source is unavailable, stop and report the missing configuration instead of silently degrading.
+- If a user-requested Zotero or Obsidian source is unavailable, stop retrieval from that source and report its missing configuration. Continue other authorized sources with incomplete coverage clearly marked; an exclusive-source request still requires that source.
 - Only unrequested optional sources may be skipped automatically.
 - Zotero/Obsidian tools may have different names depending on how the user configured the MCP server (e.g., `mcp__zotero__search` or `mcp__zotero-mcp__search_items`). Try the most common patterns and adapt.

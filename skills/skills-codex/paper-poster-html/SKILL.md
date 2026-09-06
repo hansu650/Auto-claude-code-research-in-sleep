@@ -84,7 +84,7 @@ paper (.tex / PDF) ──► content plan + claim→evidence audit (fresh review
   + gold `#C9A24A` highlight + neutrals) for **all** venues. Venue packs are opt-in via
   `— venue-colors: true`. Purple-dominant accents (hue 250–285) are banned unless the
   user passes `— allow-purple: true`.
-- **AUTO_PROCEED = false** — wait for explicit confirmation at every 🚦 checkpoint.
+- **AUTO_PROCEED = true** — continue through the requested poster draft. Set `false` for user-requested staged review. A checkpoint pauses only for a consequential missing decision, an explicit gate exception, or that staged mode.
 - **OUTPUT_DIR** = `poster_html/` in the working directory.
 
 ## Workflow
@@ -112,17 +112,17 @@ paper (.tex / PDF) ──► content plan + claim→evidence audit (fresh review
    `POSTER_STATE.json` — specs change yearly; never reuse a cached spec silently.
 
 **🚦 Checkpoint**: echo the venue spec table (canvas, orientation, source URL) and the
-chosen template. Wait.
+chosen template. Continue under `AUTO_PROCEED`; pause only under the checkpoint rule.
 
 ### Phase 0.5 — Design discovery (one question batch)
 
-Ask the user once, ≤4 questions: layout template (from `templates/README.md`), palette
+Reuse supplied decisions first. If a missing design choice materially affects the result, ask one concise batch covering only that missing input: layout template (from `templates/README.md`), palette
 (default generic pack / venue pack / custom within constraints), logos + venue mark
 (paths or "none" — never fabricate; check the venue's logo policy), QR target (paper /
 code / project page / none — generate **offline** with `qrencode` or python-`qrcode`;
 never a remote QR-service URL). Persist answers in `POSTER_STATE.json` as
 `design_decisions` — re-read before any later "improvement" so deliberate choices are
-never reverted.
+never reverted. When no such question is needed, use a suitable template and the default palette, omit optional logos/QR targets that were not supplied, and record the assumptions.
 
 ### Phase 1 — Paper ingest, content plan, claim audit
 
@@ -165,7 +165,7 @@ never reverted.
    ```
 3. Fix every non-OK row or record it as a user-acknowledged tradeoff.
 
-**🚦 Checkpoint**: content plan + audit summary. Wait.
+**🚦 Checkpoint**: present the content plan and audit summary; continue under the checkpoint rule.
 
 ### Phase 2 — Real paper figures (provenance-gated)
 
@@ -173,7 +173,7 @@ Source preference chain:
 1. Paper source `figures/` (vector SVG/PDF → convert to SVG via
    `inkscape`/`pdf2svg` if available, else rasterize ≥ 2× rendered px).
 2. PDF-only: `extract_pdf_figures.py contact-sheet` + `auto` to list candidate
-   regions → pick crops (**🚦 human confirms crop choices**) → `crop` at 300–450 DPI.
+   regions → pick crops (inspect labels/captions; ask only if source boundaries remain ambiguous) → `crop` at 300–450 DPI.
 3. Last resort: user supplies explicit `page,x0,y0,x1,y1` bboxes.
 
 Then `preprocess_figures.py --autocrop` every asset. Every paper-derived image gets a
@@ -281,8 +281,7 @@ that reference only tokens; **(f)** switching predefined variants (`.eqn--large`
 for a clearer figure from the same paper, re-preprocess).
 
 Forbidden: new inline styles, new hex values anywhere, bespoke decorative SVG,
-per-element font-size overrides. **A new component may not be born inside the visual
-loop** — stop, get a human checkpoint, add it to `COMPONENTS.md`, re-run from Phase 3.
+per-element font-size overrides. **A new component requires a structural revision** — leave the cosmetic loop, document it in `COMPONENTS.md`, and re-run from Phase 3. Ask only if it changes a user-chosen design, task scope, or an explicit gate exception.
 
 ### Phase 6 — Final review (fresh reviewer agent, same-family provisional)
 

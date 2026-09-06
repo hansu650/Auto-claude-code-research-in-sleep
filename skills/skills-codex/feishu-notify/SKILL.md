@@ -1,6 +1,6 @@
 ---
 name: "feishu-notify"
-description: "Send notifications to Feishu/Lark. Internal utility used by other skills, or manually via /feishu-notify. Use when user says \"发飞书\", \"notify feishu\", or other skills need to send status updates."
+description: "Send a Feishu/Lark notification explicitly requested or already authorized by the user. May serve as a utility for authorized workflow notifications. Use for 发飞书 or notify Feishu; an existing configuration or another skill requesting status updates does not itself authorize a message."
 ---
 
 # Feishu/Lark Notification
@@ -38,13 +38,15 @@ The skill reads `~/.codex/feishu.json`. If this file does not exist, **all Feish
 | **Push only** | `"push"` | Send webhook notifications at key events. Mobile push, no reply | Feishu bot webhook URL |
 | **Interactive** | `"interactive"` | Full bidirectional. Approve/reject from Feishu, reply to checkpoints | [feishu-claude-code](https://github.com/joewongjc/feishu-claude-code) running |
 
+## Authorization
+
+Send only messages covered by an explicit user request or an existing session authorization, with the authorized destination and content scope. A calling skill, available webhook or configured mode is not authorization. Skip optional notifications without interrupting the main task when they were not authorized.
+
 ## Workflow
 
 ### Step 1: Read Config
 
-```bash
-cat ~/.codex/feishu.json 2>/dev/null
-```
+Read only the mode and required configuration fields through a local parser. Keep webhook URLs and bridge credentials inside the sending process; do not print the raw configuration or secrets into tool output.
 
 - **File not found** → return silently, do nothing
 - **`"mode": "off"`** → return silently, do nothing
@@ -102,7 +104,7 @@ Interactive mode uses [feishu-claude-code](https://github.com/joewongjc/feishu-c
    ```
    Returns: `{"reply": "approve"}` or `{"reply": "reject"}` or `{"reply": "user typed message"}` or `{"timeout": true}`
 
-3. **On timeout**: Fall back to `AUTO_PROCEED` behavior (proceed with default option).
+3. **On timeout**: Return the timeout to the caller. Continue only work already authorized that does not depend on the missing answer; required approval remains pending.
 
 4. **Return the user's reply** to the calling skill so it can act on it.
 
@@ -118,7 +120,7 @@ Other skills should use this pattern to send notifications:
 ```markdown
 ### Feishu Notification (if configured)
 
-Check if `~/.codex/feishu.json` exists and mode is not "off":
+First verify explicit user authorization for this notification. Then check if `~/.codex/feishu.json` exists and mode is not "off":
 - If **push** mode: send webhook notification with event summary
 - If **interactive** mode: send notification and wait for user reply
 - If **off** or file absent: skip entirely (no-op)
@@ -149,7 +151,7 @@ Skills send these events at these moments:
 - **NEVER require Feishu config** — all skills must work without it.
 - **Config file absent = mode off.** No error, no warning, no log.
 - **Push mode is fire-and-forget.** Send curl, check exit code, move on.
-- **Interactive timeout = auto-proceed.** Don't hang forever waiting for a reply.
-- **Respect `AUTO_PROCEED`**: In interactive mode, if the user doesn't reply within timeout, use the same auto-proceed logic as the calling skill.
+- **Interactive timeout is not approval.** Return control to the caller and preserve any pending required decision.
+- **Respect existing authorization**: `AUTO_PROCEED` may continue already authorized work, never approve a new action or resolve a required missing answer.
 - **No secrets in notifications.** Never include API keys, tokens, or passwords in Feishu messages.
 

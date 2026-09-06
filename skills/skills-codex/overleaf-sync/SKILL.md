@@ -143,7 +143,7 @@ git push
 - `citation-audit: fix 14 metadata entries (madaan2023, lee2024, ...)`
 - `paper-claim-audit: correct sec/5 numbers vs results/run_2026_04_19.json`
 
-**Confirmation gate**: `push` writes to a shared resource. ALWAYS show the user `git diff --stat` (and a representative hunk for prose changes) before running `git push`. Wait for explicit confirmation unless the user said `auto: true` upfront.
+**Authorization gate**: Before `git push`, show `git diff --stat` and a representative prose hunk, confirm the target project, and check for unexpected shared changes. An explicit request to push/sync these edits, an applicable earlier session approval, or `auto: true` authorizes that same scope; do not ask again solely because a flag is absent. If authorization is missing or the target/scope changed materially, prepare the concrete diff first and request approval before pushing.
 
 ### `status` — diagnostic
 

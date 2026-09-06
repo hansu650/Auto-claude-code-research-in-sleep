@@ -8,8 +8,8 @@ Codex-native mirror and adaptation layer for the main ARIS `skills/` package.
 - Support directory: `shared-references/`, with all `30/30` mainline reference names mirrored
 - Default reviewer contract for reviewer-heavy skills:
   - round 1: `spawn_agent`
-  - follow-up: `send_input`
-  - reasoning effort: `xhigh`
+  - follow-up: the live host's continuation tool (`send_input` or `followup_task`)
+  - reasoning effort: `xhigh`, or `ultra` for the declared deep-audit skills
   - base Codex self-review: `review_independence: same-family`,
     `acceptance_status: provisional`
   - Claude/Gemini overlays or deterministic verification: `acceptance_status: accepted`
@@ -90,6 +90,12 @@ bash ~/aris_repo/tools/smart_update_codex.sh --project ~/your-project --apply
 
 `smart_update_codex.sh` refuses symlink-managed installs and redirects them to `install_aris_codex.sh --reconcile`.
 
+## Scoped Execution
+
+Follow the requested deliverable and existing session authorization. Drafting workflows proceed with reasonable defaults; ask when missing information materially changes scope, cost or irreversible outcomes. Workload profiles and default round counts are planning bounds, not quotas. Stop after the requested outcome and required checks are satisfied.
+
+A missing review or verification capability blocks only the verdict and dependent steps. Continue useful authorized work and report its actual validation status. The base reviewer remains same-family and provisional. Machine-specific paths and environment preferences belong in the user's configuration.
+
 ## Non-Degrading Skills
 
 The following Codex skills must not silently degrade when their required capability is missing:
@@ -99,4 +105,4 @@ The following Codex skills must not silently degrade when their required capabil
 - `paper-poster-html`
 - `pixel-art`
 
-If the required source, reviewer, or local preview capability is unavailable, the skill should stop and tell the user what to configure.
+Report a missing required source, reviewer or preview capability and what setup is needed. Do not silently claim complete coverage or a verified result. In `research-lit`, continue other authorized sources with incomplete coverage marked; an exclusive-source request still depends on that source. For artifact workflows, continue supported preparation and exports while leaving dependent assurance unverified.

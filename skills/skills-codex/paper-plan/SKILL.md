@@ -57,7 +57,7 @@ Keep the existing workflow and outputs, but use the shared references below to i
 
 **First check for `CLAIMS_FROM_RESULTS.md`** — if its first line is `verdict: REVIEW_UNAVAILABLE`, treat the file as ABSENT for claim extraction (fall through to the narrative documents below) and then: under `— assurance: submission` (`shared-references/assurance-contract.md`; implied by `— effort: max|beast`) STOP — the claims were never adjudicated, rerun `/result-to-claim` first; under `assurance: draft` continue but tag every claim `[unadjudicated]`. Otherwise, if it exists, use it as the starting point for claims and merge it with any additional evidence from the narrative documents below.
 
-Read all available narrative documents and extract:
+Read the current authoritative narrative and relevant evidence first. Consult other versions or earlier review logs only to resolve gaps, conflicts or required history. For the requested outline or section, extract:
 
 1. **Core claims** (3-5 main contributions)
 2. **Evidence** for each claim (which experiments, which metrics, which figures)
@@ -303,6 +303,6 @@ Outline methodology inspired by [Research-Paper-Writing-Skills](https://github.c
 ## Output Protocols
 
 > Follow these shared protocols for all output files:
-> - **[Output Versioning Protocol](../../shared-references/output-versioning.md)** — write timestamped file first, then copy to fixed name
-> - **[Output Manifest Protocol](../../shared-references/output-manifest.md)** — log every output to MANIFEST.md
-> - **[Output Language Protocol](../../shared-references/output-language.md)** — respect the project's language setting
+> - **[Output Versioning Protocol](../shared-references/output-versioning.md)** — write timestamped file first, then copy to fixed name
+> - **[Output Manifest Protocol](../shared-references/output-manifest.md)** — maintain MANIFEST.md only when a run exceeds the protocol's >15-artifact threshold
+> - **[Output Language Protocol](../shared-references/output-language.md)** — respect the project's language setting

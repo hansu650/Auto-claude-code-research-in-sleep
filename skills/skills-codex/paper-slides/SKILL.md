@@ -1,6 +1,6 @@
 ---
 name: paper-slides
-description: "Generate conference presentation slides (beamer LaTeX → PDF + editable PPTX) from a compiled paper, with speaker notes and full talk script. Use when user says \"做PPT\", \"做幻灯片\", \"make slides\", \"conference talk\", \"presentation slides\", \"生成slides\", \"写演讲稿\", or wants beamer slides for a conference talk."
+description: "Generate academic conference slides from a research paper, with Beamer PDF, editable PPTX, speaker notes and a talk script. Use for turning a paper into an oral, spotlight or poster-lightning talk, or explicit paper-slides requests. General business decks and standalone speech writing use their respective workflows."
 argument-hint: "[paper-directory-or-talk-length]"
 allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob
 ---
@@ -25,7 +25,7 @@ Unlike posters (single page, visual-first), slides tell a **temporal story**: ea
 - **PAPER_DIR = `paper/`** — Directory containing the compiled paper.
 - **OUTPUT_DIR = `slides/`** — Output directory for all slide files.
 - **REVIEWER_MODEL = `gpt-5.6-sol`** — Model used via Codex MCP for slide review.
-- **AUTO_PROCEED = false** — At each checkpoint, **always wait for explicit user confirmation**.
+- **AUTO_PROCEED = true** — Continue through the requested draft deliverables using session decisions. Set `false` when the user requests staged review; ask only for consequential missing input.
 - **COMPILER = `latexmk`** — LaTeX build tool.
 - **ENGINE = `pdflatex`** — LaTeX engine. Use `xelatex` for CJK text.
 
@@ -150,7 +150,7 @@ Read `paper/sections/*.tex` and build a slide-by-slide outline.
 
 **Output**: `slides/SLIDE_OUTLINE.md`
 
-**🚦 Checkpoint:**
+**🚦 Checkpoint:** Summarize the outline and continue by default. Use the question and go/stop options below only when the checkpoint rule requires a pause.
 
 ```
 📊 Slide outline ready:
@@ -168,7 +168,7 @@ Slide-by-slide outline:
 Proceed to drafting? Or adjust the outline?
 ```
 
-**⛔ STOP HERE and wait for user response.** This is the most critical checkpoint — the outline determines the entire talk flow.
+**Checkpoint behavior:** summarize the result and continue within the requested draft scope. Pause only if `AUTO_PROCEED=false` was requested or a specific missing fact or decision materially changes the deliverable; reuse decisions already supplied. The outline records the chosen story and remains reviewable.
 
 Options:
 - **"go"** → proceed to Phase 2
@@ -349,7 +349,7 @@ spawn_agent:
 
 Apply fixes. Recompile if LaTeX was changed.
 
-> If reviewer delegation is unavailable in the current Codex host, stop and ask the user to enable Codex agent support before continuing Phase 6.
+> If reviewer delegation is unavailable, record `REVIEW_UNAVAILABLE` and the actual cause in `SLIDES_REVIEW.md`. Continue supported rendering, deterministic checks, notes and export; deliver the usable draft with independent review marked incomplete. Block only readiness claims that require that review, and request setup only if that missing review is required for the user's requested assurance level.
 
 Save review to `slides/SLIDES_REVIEW.md`.
 
@@ -552,7 +552,7 @@ Next steps:
 - **Do NOT hallucinate citations.** Reference only papers cited in the paper.
 - **Opening hook matters**: Never start with "In this paper, we..." — start with the problem or a provocative question.
 - **Font size minimums**: Title ≥28pt, body ≥20pt, footnotes ≥14pt.
-- **Feishu notifications are optional.** If `~/.codex/feishu.json` exists, send notifications. If absent, skip.
+- **Feishu notifications are optional.** Send only when the user has explicitly authorized these notifications and configuration is available; configuration alone is not authorization.
 
 ## Parameter Pass-Through
 
@@ -568,4 +568,4 @@ Next steps:
 | `aspect` | 16:9 | Aspect ratio (16:9 / 4:3) |
 | `notes` | true | Generate speaker notes |
 | `engine` | pdflatex | LaTeX engine |
-| `auto proceed` | false | Skip checkpoints |
+| `auto proceed` | true | Continue drafting; false enables staged review |

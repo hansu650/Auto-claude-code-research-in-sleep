@@ -10,7 +10,14 @@ Every ARIS skill accepts an optional `effort` parameter that controls how much w
 /any-skill "args" — effort: lite | balanced | max | beast
 ```
 
-Default: `balanced` (current behavior, zero change for existing users).
+Default: `balanced`. Select breadth and depth to meet the requested deliverable; the profiles below are planning guides and upper bounds, not mandatory quotas.
+
+## Applying the profiles
+
+- User scope, concrete limits, and applicable quality gates take precedence over profile counts. A narrow edit does not activate an entire research pipeline.
+- Stop when the requested outcome and required checks are satisfied. Start another search, render, test, or review only for an unresolved issue, changed input, or an explicit request for more coverage.
+- A round cap limits iteration; it does not certify success. At the cap or when no useful next revision is available, report remaining issues and a supported next step without inventing a positive verdict.
+- Reuse valid checks for unchanged inputs. Mandatory evidence and submission audits cannot be skipped because a profile says lite; scale their applicable scope and report unavailable checks honestly.
 
 ## Hard Invariants (NEVER changed by effort)
 
@@ -36,7 +43,7 @@ Current ARIS behavior. What existing users get today. No change.
 Go deeper than defaults. More papers, more ideas, more rounds, more detail.
 
 ### `beast` (~5-8x tokens)
-No budget limit. Every knob to maximum. For top-venue submission sprints.
+Highest planned breadth for top-venue submission sprints, still bounded by the user's scope, time and compute budget. This setting does not authorize spending or unlimited iteration.
 
 ## Per-Skill Profiles
 
@@ -74,7 +81,7 @@ No budget limit. Every knob to maximum. For top-venue submission sprints.
 | auto-review-loop | max rounds | 2 | 3-4 | 6 | 8+ (until converged) |
 | auto-review-loop | fixes per round | 1-2 | 3-4 | 4-6 | all actionable |
 | research-review | passes | 1 | 1 + follow-up | 1 + 2 follow-ups | 2 independent + cross-compare |
-| experiment-audit | depth | skip | basic 4 checks | full 6 checks | line-by-line + reproduce |
+| experiment-audit | depth | applicable critical checks | basic 4 checks | full 6 checks | line-by-line + reproduce |
 
 ### Writing & Rebuttal
 
@@ -85,7 +92,7 @@ No budget limit. Every knob to maximum. For top-venue submission sprints.
 | paper-figure | caption reviews | 1 | 1 | 2 | 3 |
 | paper-write | abstract variants | 1 | 1 | 2 | 3 |
 | paper-write | related work depth | shallow | standard | deep | exhaustive |
-| paper-compile | fix attempts | 2 | 3 | 4 | until zero warnings |
+| paper-compile | fix attempts | 2 | 3 | 4 | resolve blocking errors and visible defects within budget; report benign warnings |
 | auto-paper-improvement | rounds | 1 | 2 | 3 | 5 |
 | paper-illustration | render iterations | 2 | 3 | 5 | 7 |
 | rebuttal | draft rounds | 1 | 2 | 3 | 5 |
@@ -116,7 +123,7 @@ Adjust constants:
 
 ## Transparency
 
-Every skill should print its effort configuration at the start:
+When effort materially changes cost or scope, briefly state the chosen configuration; omit a configuration banner for small requests:
 
 ```
 ⚡ [effort: max] papers=25, ideas=16, rounds=6 | Codex: tier per reviewer-routing.md (floor xhigh)
@@ -133,7 +140,9 @@ explicit concrete knob (e.g., review_rounds: 2)
 
 Example: `— effort: beast, review_rounds: 3` → everything beast except review capped at 3.
 
-## Token Cost Estimation
+## Historical Cost Estimates (unverified for Astra)
+
+These ratios are inherited planning estimates, not measurements or promises for the current model or task.
 
 | Level | LLM tokens | GPU/wall-clock | Best for |
 |-------|-----------|----------------|----------|

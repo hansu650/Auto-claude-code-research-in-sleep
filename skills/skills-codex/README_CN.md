@@ -8,8 +8,8 @@
 - 支持目录：`shared-references/`，与主线 `30/30` 名称完整对齐
 - reviewer-heavy skill 的默认 reviewer 契约：
   - 首轮：`spawn_agent`
-  - 续接：`send_input`
-  - 推理强度：`xhigh`
+  - 续接：当前宿主提供的工具（`send_input` 或 `followup_task`）
+  - 推理强度：`xhigh`；明确标记的 deep-audit skill 使用 `ultra`
   - 基础 Codex 自审：`review_independence: same-family`、
     `acceptance_status: provisional`
   - Claude/Gemini overlay 或确定性验证：`acceptance_status: accepted`
@@ -88,6 +88,12 @@ bash ~/aris_repo/tools/smart_update_codex.sh --project ~/your-project --apply
 
 `smart_update_codex.sh` 会拒绝更新由 `install_aris_codex.sh` 管理的 symlink 安装，并提示改用 `install_aris_codex.sh --reconcile`。
 
+## 按任务范围执行
+
+以用户要求的交付物和会话中已有授权为准。草稿流程使用合理默认值继续；只有缺失信息会实质改变范围、成本或不可逆结果时才询问。工作量档位和默认轮数是规划上限，不是必须做满的配额；完成交付和必要检查后即可结束。
+
+某项审查或验证不可用时，只阻塞依赖它的结论和步骤，继续其他有用且已授权的工作，并如实报告验证状态。基座 reviewer 仍是同族审查，结果保持 provisional。本机路径和环境管理偏好保存在用户自己的配置中。
+
 ## 不允许降级的 Skill
 
 以下 4 个 skill 不允许静默降级：
@@ -97,4 +103,4 @@ bash ~/aris_repo/tools/smart_update_codex.sh --project ~/your-project --apply
 - `paper-poster-html`
 - `pixel-art`
 
-如果缺少所需能力，必须明确提示用户去配置，不允许自动改成简化路径继续跑。
+缺少必需来源、reviewer 或预览能力时，明确说明缺少什么以及所需配置，不得把不完整覆盖或未验证结果写成通过。`research-lit` 可以继续其他已授权来源并标明覆盖缺口；用户要求独占来源时仍需该来源。制品流程可继续支持的准备和导出，依赖缺失能力的验收保持未验证。

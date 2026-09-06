@@ -19,6 +19,10 @@ to influence future runs:
 **provenance-as-authorization boundary**: a provenance record is not just metadata,
 it *is* the authorization to auto-curate.
 
+## Scope
+
+This contract governs ARIS auto-curation of machine-owned artifacts. A user's explicit request to review and edit their own instructions is a user-directed maintenance task: preserve the requested scope, back up before editing, and validate the changes. Do not require an auto-curation receipt or a second approval solely because an agent performs that authorized edit. This does not authorize unattended rewriting of human files, relabel a same-family review as accepted, or bypass a separately invoked privileged landing workflow.
+
 ## The rule
 
 - **Auto-curation may ONLY touch artifacts where `is_auto_curatable(path)` is True.**

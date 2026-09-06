@@ -37,7 +37,7 @@ Grant proposals argue for **future work** (feasibility + potential), not complet
 - **MAX_REVIEW_ROUNDS = 2** — Maximum external review-revise cycles before finalizing.
 - **OUTPUT_DIR = `grant-proposal/`** — Directory for generated proposal files.
 - **LANGUAGE = `auto`** — Output language. Auto-detected from grant type: KAKENHI→Japanese, NSF→English, NSFC→Chinese, ERC→English, DFG→English (or German), SNSF→English, ARC→English, NWO→English. Override explicitly if needed.
-- **AUTO_PROCEED = false** — At each checkpoint, **always wait for explicit user confirmation** before proceeding. Grant proposals require PI-specific judgment at every stage. Set `true` only if user explicitly requests fully autonomous mode.
+- **AUTO_PROCEED = true** — Complete the requested proposal draft using supplied facts. Set `false` for staged review. Ask for missing eligibility, PI achievements, institutional commitments, budgets or research-direction decisions that cannot be inferred; use clearly marked placeholders for nonblocking missing facts, never invent them. Submission and new commitments require their own authorization.
 
 > 💡 These are defaults. Override by telling the skill, e.g., `/grant-proposal "topic — NSF CAREER, latex output"` or `/grant-proposal "topic — NSFC Youth, language: English"`.
 
@@ -214,7 +214,7 @@ Invoke `/research-lit` to ground the proposal in real literature, then search fo
 Does this accurately capture the positioning? Should I adjust before designing the proposal structure?
 ```
 
-**⛔ STOP HERE and wait for user response.** Do NOT auto-proceed unless AUTO_PROCEED=true was explicitly set by the user.
+**Checkpoint behavior:** summarize the result and continue within the requested draft scope. Pause only if `AUTO_PROCEED=false` was requested or a specific missing fact or decision materially changes the deliverable; reuse decisions already supplied.
 
 Options for the user:
 - Reply **"go"** or **"ok"** → proceed to Phase 2 with current positioning
@@ -309,7 +309,7 @@ Apply structural feedback before proceeding to drafting.
 Proceed to section drafting? Or adjust the structure?
 ```
 
-**⛔ STOP HERE. This is the most critical checkpoint — the proposal structure determines everything downstream.**
+**Checkpoint behavior:** summarize the result and continue within the requested draft scope. Pause only if `AUTO_PROCEED=false` was requested or a specific missing fact or decision materially changes the deliverable; reuse decisions already supplied.
 
 Options for the user:
 - Reply **"go"** or **"ok"** → proceed to Phase 3 (section drafting)
@@ -357,7 +357,7 @@ For AI-generated publication-quality figures, invoke `/paper-illustration`:
 
 For simpler diagrams (flowcharts, Gantt charts), generate clean SVG or matplotlib directly via code.
 
-**🚦 Figure Checkpoint:** Before generating, ask which figures the user wants:
+**🚦 Figure Checkpoint (when needed):** Reuse requested figures or the selected plan. Ask only when optional figures materially expand scope or incur an unapproved cost:
 
 ```
 🎨 The following figures would strengthen this proposal:
@@ -368,7 +368,7 @@ For simpler diagrams (flowcharts, Gantt charts), generate clean SVG or matplotli
 Which should I generate? (e.g., "1 and 3", "all", "skip")
 ```
 
-**⛔ Wait for user response.** Generate only the requested figures.
+If that approval or consequential input is required, wait for it while continuing independent drafting. Otherwise generate only figures justified by the requested proposal and selected plan.
 
 #### Grant-Specific Drafting Guidelines
 
@@ -567,7 +567,7 @@ What would you like to do next?
 - **Preliminary data de-risks.** Include any pilot results, existing datasets, or prior publications that demonstrate feasibility.
 - **Reviewer-facing structure.** Bold key sentences. Use numbered lists for clarity. Make the reviewer's job easy.
 - **Cultural norms matter.** KAKENHI expects 社会的意義; NSF expects Broader Impacts; NSFC expects 国际前沿 positioning. Missing these is a red flag for reviewers.
-- **Feishu notifications are optional.** If `~/.codex/feishu.json` exists, send `checkpoint` at each phase transition and `pipeline_done` at final output. If absent, skip silently.
+- **Feishu notifications are optional.** Send only the events explicitly authorized by the user when configuration is available; configuration alone is not authorization.
 
 ## Parameter Pass-Through
 
@@ -587,7 +587,7 @@ Parameters can be passed inline with `—` separator. They flow to sub-skills wh
 | `sources` | all | Literature sources | → `/research-lit` |
 | `arxiv download` | false | Download arXiv PDFs | → `/research-lit` |
 | `reviewer model` | gpt-5.6-sol | Codex review model | → reviewer agent |
-| `auto proceed` | false | Skip checkpoints | — |
+| `auto proceed` | true | Continue drafting; false enables staged review | — |
 
 ## Composing with Other Skills
 
@@ -621,6 +621,6 @@ Parameters can be passed inline with `—` separator. They flow to sub-skills wh
 ## Output Protocols
 
 > Follow these shared protocols for all output files:
-> - **[Output Versioning Protocol](../../shared-references/output-versioning.md)** — write timestamped file first, then copy to fixed name
-> - **[Output Manifest Protocol](../../shared-references/output-manifest.md)** — log every output to MANIFEST.md
-> - **[Output Language Protocol](../../shared-references/output-language.md)** — respect the project's language setting
+> - **[Output Versioning Protocol](../shared-references/output-versioning.md)** — write timestamped file first, then copy to fixed name
+> - **[Output Manifest Protocol](../shared-references/output-manifest.md)** — maintain MANIFEST.md only when a run exceeds the protocol's >15-artifact threshold
+> - **[Output Language Protocol](../shared-references/output-language.md)** — respect the project's language setting

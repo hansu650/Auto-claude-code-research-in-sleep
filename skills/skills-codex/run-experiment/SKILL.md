@@ -176,7 +176,7 @@ Check process is running and GPU is allocated.
 
 ### Step 6: Feishu Notification (if configured)
 
-After deployment is verified, check `~/.codex/feishu.json`:
+After deployment is verified, send only if these notifications were explicitly authorized by the user and `~/.codex/feishu.json` is configured:
 - Send `experiment_done` notification: which experiments launched, which GPUs, estimated time
 - If config absent or mode `"off"`: skip entirely (no-op)
 
@@ -186,7 +186,7 @@ Only run this after the experiment has completed and results/logs/checkpoints ha
 
 1. Verify the target process has exited.
 2. Copy result files and logs to the configured durable location.
-3. Ask for confirmation unless AGENTS.md explicitly says `auto_destroy: true`.
+3. Reuse explicit session authorization to destroy this recorded instance after successful artifact persistence, including `auto_destroy: true` supplied in the request or AGENTS.md. Ask only if that authorization is absent or the target/conditions changed.
 4. Destroy only the recorded instance id for this run.
 
 If any artifact copy fails, do not destroy the instance.

@@ -15,7 +15,7 @@ Trace every Codex reviewer call that serves a critique, scoring, claim-verificat
 This includes:
 
 - `spawn_agent` reviewer calls
-- `send_input` reviewer continuations
+- `followup_task` reviewer continuations
 - optional overlay reviewer routes
 - adversarial reviewer calls used for stress tests
 
@@ -96,10 +96,15 @@ the resolver returns the empty string, write the four files inline
 }
 ```
 
-For a Claude/Gemini overlay write `review_independence: cross-family` and
-`acceptance_status: accepted`. For a deterministic verifier write
-`review_independence: deterministic` and `acceptance_status: accepted`. These
-fields describe the reviewer route; they do not rewrite the substantive verdict.
+For a successful Claude/Gemini overlay call, write `review_independence:
+cross-family` and `acceptance_status: accepted` only after artifact transport is
+complete and the terminal payload has `status: completed`, an empty `error`,
+and a non-empty reviewer `response`. If transport or the reviewer worker fails,
+write `status: blocked` or `status: error`, preserve the error, and set
+`acceptance_status: null`; an attempted route is not an accepted review. For a
+successful deterministic verifier write `review_independence: deterministic`
+and `acceptance_status: accepted`. These fields describe whether a usable
+independent review was obtained; they do not rewrite its substantive verdict.
 
 ## Configuration
 

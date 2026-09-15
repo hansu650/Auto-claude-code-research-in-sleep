@@ -10,9 +10,9 @@ All reviewer-heavy Codex base skills use the same default contract:
   **deep-audit** skills use `ultra` (`proof-checker`, `kill-argument` core threads, `research-review`,
   `experiment-audit`, `paper-claim-audit`, `result-to-claim`, `meta-apply`); **every other**
   reviewer call uses `xhigh` (multi-round loops and per-item fan-outs stay `xhigh` — a
-  follow-up `send_input` cannot change model/effort, and per-item `ultra` multiplies cost)
+  follow-up `followup_task` cannot change model/effort, and per-item `ultra` multiplies cost)
 - round 1: `spawn_agent`
-- follow-up rounds: `send_input`
+- follow-up rounds: `followup_task`
 
 This is the base default for `skills/skills-codex/`. No ARIS `— effort:` level or unrelated parameter changes the tier (ARIS `— effort: max` ≠ `reasoning_effort: max` — pipeline workload vs reviewer reasoning are different axes).
 
@@ -37,7 +37,7 @@ This is the base default for `skills/skills-codex/`. No ARIS `— effort:` level
 ## Invocation and scope
 
 - Treat the model and effort above as the existing reviewer defaults, not evidence that a newer executor requires a reviewer migration. Honor an explicit user reviewer choice when the live tool supports it; record the actual route and independence.
-- Use the current tool schema and supported continuation tool (`send_input` on Codex CLI or `followup_task` on hosts that expose it); the examples are logical call shapes. For a fresh reviewer, or when passing model/effort overrides to Codex collaboration tools, set `fork_turns: "none"` and provide only the review objective and primary artifacts. Do not copy an example field that the current tool does not accept.
+- Use the current tool schema. For a fresh reviewer, or when passing model/effort overrides to Codex collaboration tools, set `fork_turns: "none"` and provide only the review objective and primary artifacts. Do not copy an example field that the current tool does not accept.
 - `REVIEW_UNAVAILABLE` blocks that independent verdict and any claim that requires it. Continue useful preparation, repairs and deterministic checks within the authorized task. Clearly label executor-only feedback; never turn it into an independent PASS or submission acceptance.
 - Request user input only when a required route or permission has no supported authorized alternative. A same-family reviewer remains provisional regardless of whether its model is Sol or Astra.
 
@@ -69,7 +69,7 @@ spawn_agent:
 Save the returned reviewer id, then continue with:
 
 ```text
-send_input:
+followup_task:
   target: <saved reviewer id>
   message: |
     [follow-up materials only]
@@ -86,7 +86,7 @@ Routing rule:
 
 ```text
 If reviewer is omitted or reviewer=codex:
-  use spawn_agent / send_input with the Codex reviewer at the call's declared tier
+  use spawn_agent / followup_task with the Codex reviewer at the call's declared tier
 
 If reviewer=oracle-pro:
   check Oracle MCP availability

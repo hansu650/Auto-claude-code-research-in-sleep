@@ -4,6 +4,22 @@ When one ARIS skill delegates work to another (or to persistent project
 state), the coupling must be **engineered**, not assumed. This document
 formalizes what every cross-skill integration inside ARIS must provide.
 
+## Host-portable Python launcher
+
+Codex may run on Windows, macOS, or Linux. Before invoking a Python helper,
+resolve the interpreter with host-native command discovery: prefer `python3`
+when it exists, otherwise use `python`. On PowerShell, invoke the resolved path
+with the call operator (`& $PythonCmd ...`); on a POSIX shell, invoke
+`"$PYTHON_CMD" ...`. If neither command exists, apply the integration's declared
+failure policy. Any new or modified Codex helper invocation that claims
+host-portable behavior must not assume that a bare `python3` command exists.
+Older POSIX-only examples that have not yet migrated are explicit compatibility
+debt, not evidence of Windows support; migrate them when their owning workflow
+is touched instead of performing an unreviewed corpus-wide textual replacement.
+
+The shell fragments below use `$PYTHON_CMD` to mean this already-resolved
+interpreter path.
+
 Rule of thumb: **SKILL.md prose can *describe* an integration; it cannot
 *guarantee* one.** Any integration whose silent failure would damage the
 research result needs the components below. Prose-only "MUST invoke X"
@@ -112,7 +128,7 @@ when the primary output is still delivered without the helper (e.g.
 [ -n "$WIKI_SCRIPT" ] || {
   echo "WARN: research_wiki.py not resolved; primary output unaffected, wiki side-effect skipped." >&2
 }
-[ -n "$WIKI_SCRIPT" ] && python3 "$WIKI_SCRIPT" ingest_paper research-wiki/ --arxiv-id "$id"
+[ -n "$WIKI_SCRIPT" ] && "$PYTHON_CMD" "$WIKI_SCRIPT" ingest_paper research-wiki/ --arxiv-id "$id"
 ```
 
 **C. Forensic helper — unresolved means write artifacts directly.**
@@ -139,7 +155,7 @@ POSIX-sh safe (`${VAR:-}` defaults plus explicit `source_used=""`):
 ```bash
 source_used=""
 if [ -n "${S2_FETCHER:-}" ]; then
-  if python3 "$S2_FETCHER" --query "$Q" > results.jsonl; then
+  if "$PYTHON_CMD" "$S2_FETCHER" --query "$Q" > results.jsonl; then
     source_used="semantic_scholar"
   else
     echo "WARN: semantic_scholar_fetch.py invocation failed; trying arxiv." >&2
@@ -148,7 +164,7 @@ if [ -n "${S2_FETCHER:-}" ]; then
 fi
 if [ -z "$source_used" ] && [ -n "${ARXIV_FETCHER:-}" ]; then
   echo "WARN: semantic_scholar_fetch.py not resolved or failed; falling back to arxiv_fetch.py." >&2
-  if python3 "$ARXIV_FETCHER" --query "$Q" > results.jsonl; then
+  if "$PYTHON_CMD" "$ARXIV_FETCHER" --query "$Q" > results.jsonl; then
     source_used="arxiv_fallback"
   fi
 fi
@@ -178,12 +194,12 @@ append_source() {
 }
 
 if [ -n "${S2_FETCHER:-}" ]; then
-  if python3 "$S2_FETCHER" --query "$Q" >> results.jsonl 2>>fetch.log; then
+  if "$PYTHON_CMD" "$S2_FETCHER" --query "$Q" >> results.jsonl 2>>fetch.log; then
     append_source "semantic_scholar"
   fi
 fi
 if [ -n "${ARXIV_FETCHER:-}" ]; then
-  if python3 "$ARXIV_FETCHER" --query "$Q" >> results.jsonl 2>>fetch.log; then
+  if "$PYTHON_CMD" "$ARXIV_FETCHER" --query "$Q" >> results.jsonl 2>>fetch.log; then
     append_source "arxiv"
   fi
 fi
@@ -260,9 +276,9 @@ the standard chain.
 
 #### Examples
 
-- ✅ Resolved-via-chain invocation: `python3 "$WIKI_SCRIPT" ingest_paper <root> --arxiv-id <id>` (where `$WIKI_SCRIPT` was set by the chain above with `<helper>=research_wiki.py`)
+- ✅ Resolved-via-chain invocation: `"$PYTHON_CMD" "$WIKI_SCRIPT" ingest_paper <root> --arxiv-id <id>` (where both paths were resolved as above)
 - ✅ Resolver block + policy A above for `verify_paper_audits.sh` (submission-gate verifier)
-- ❌ Hard-coded `python3 tools/research_wiki.py …` from a downstream skill that may run in a project without `tools/` on disk — it silently exits 2 and the caller proceeds with no side effect.
+- ❌ Hard-coded `python3 tools/research_wiki.py …` from a downstream skill — the interpreter or helper path may not exist on the host, and the caller can silently proceed with no side effect.
 - ❌ N skills each paraphrasing the same 10-line bash snippet. When one drifts, they all drift.
 
 If the same 3+ lines of prose appear in more than two SKILL.md files,

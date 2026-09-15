@@ -1,0 +1,107 @@
+{
+  "schema_version": 1,
+  "snapshot_date": "2026-09-15",
+  "repository": "hansu650/Auto-claude-code-research-in-sleep",
+  "branch": "codex/experiment-skills-share-20260915",
+  "base_commit": "8ae1353b8417583a8be943ef9f4c34e661b1a7d1",
+  "scope": "Seven installed experiment skill entrypoints and six shared experimental references",
+  "notes": [
+    "Entrypoint and listed shared-reference bytes match the local installed snapshot.",
+    "Platform-specific Conda and drive preferences remain user configuration; compute-env-contract.md retains the portable base version.",
+    "Other skills and writing references retain the existing public base versions.",
+    "No experiment or recipient-machine installation was run for this publication."
+  ],
+  "files": [
+    {
+      "path": "skills/skills-codex/experiment-plan/SKILL.md",
+      "bytes": 9707,
+      "git_blob_sha1": "b5e2e37bb62b6e056ed2f3ba26dd7c6ff8b2eb82",
+      "sha256": "c9f3d5a5cf4e9e2dfc1878f43220fd209693ce0d9678c7a517262a2e5dfc4616",
+      "source_match": "exact"
+    },
+    {
+      "path": "skills/skills-codex/run-experiment/SKILL.md",
+      "bytes": 9171,
+      "git_blob_sha1": "6011dfc60f1e2f807b4804050bd591a3e510c478",
+      "sha256": "23530196eb6ebc375cd769afc1955f37c8b46ff63aa7648bbaf6f552cb90ee38",
+      "source_match": "exact"
+    },
+    {
+      "path": "skills/skills-codex/analyze-results/SKILL.md",
+      "bytes": 1568,
+      "git_blob_sha1": "06614fea27ed673c97a8e599c8520d7f9a5af952",
+      "sha256": "1a5f798558018fe6c8faa8b9997ac4cd1076aceb73cfb5bdc261e5de5727f7e2",
+      "source_match": "exact"
+    },
+    {
+      "path": "skills/skills-codex/ablation-planner/SKILL.md",
+      "bytes": 5416,
+      "git_blob_sha1": "5563d12a191e18c46dd3926e976890180b37fead",
+      "sha256": "be8086de1e8f902f1bca51c57288872672c0295608314578667f652a74435110",
+      "source_match": "exact"
+    },
+    {
+      "path": "skills/skills-codex/result-to-claim/SKILL.md",
+      "bytes": 12528,
+      "git_blob_sha1": "cc644bb8a446a1ee76ec63b425a89ecceab037c2",
+      "sha256": "25c7afd4958df47b1098ab03955775b51b6173535af2867534f8d2ba1104c67f",
+      "source_match": "exact"
+    },
+    {
+      "path": "skills/skills-codex/experiment-audit/SKILL.md",
+      "bytes": 11043,
+      "git_blob_sha1": "5dbbeff311a5924ab189802242a3b869d9c9b4d2",
+      "sha256": "57e676d3645ab05402bc1897f3bf0802abce4c968a4da9301391a8730eb083e5",
+      "source_match": "exact"
+    },
+    {
+      "path": "skills/skills-codex/monitor-experiment/SKILL.md",
+      "bytes": 3378,
+      "git_blob_sha1": "b1485768c86abbaeb128eaeb3830f5b01126c6eb",
+      "sha256": "66a42b21a7ec5a9c4ee2d4da6babfd533764d6c4188dcc178d5bcbd1d8a31072",
+      "source_match": "exact"
+    },
+    {
+      "path": "skills/skills-codex/shared-references/acceptance-gate.md",
+      "bytes": 18370,
+      "git_blob_sha1": "bd51ee2ec46eb74c42eb9ecf1261ec6f97e05a71",
+      "sha256": "1bdc7589d2b47faacfc6bc51a1937b1bf8fa133cbc43b8eb68a7c0d85395eba2",
+      "source_match": "exact"
+    },
+    {
+      "path": "skills/skills-codex/shared-references/experiment-integrity.md",
+      "bytes": 2501,
+      "git_blob_sha1": "84c68dd1142f189c650ac9062291d040b305ef0f",
+      "sha256": "0d26d167d2c0fee32d6c0c8ade33aec8533c6e893d60e908db85fdcfba49c5e5",
+      "source_match": "exact"
+    },
+    {
+      "path": "skills/skills-codex/shared-references/integration-contract.md",
+      "bytes": 19552,
+      "git_blob_sha1": "e90eb9e681bf8fca7c6861d131821c64ca7faa05",
+      "sha256": "e51cddb1c8a529747d4552d998cdc65adc735d92f947f8a629673353aa261464",
+      "source_match": "exact"
+    },
+    {
+      "path": "skills/skills-codex/shared-references/review-tracing.md",
+      "bytes": 4830,
+      "git_blob_sha1": "c9cfbe2d40c22700022dc04417d4d980cfac20d4",
+      "sha256": "e6028540e1e13eaf5ec38b9fae6ae6129ccf6a9a791570c908e5734b0a46d097",
+      "source_match": "exact"
+    },
+    {
+      "path": "skills/skills-codex/shared-references/reviewer-independence.md",
+      "bytes": 1815,
+      "git_blob_sha1": "32639d19812f939e54cdecba352cbbd50ab58785",
+      "sha256": "8344a3b1475b3fdd6b2fcd661ba7b6aef00c8cd1eff05c7b84ea2299db562527",
+      "source_match": "exact"
+    },
+    {
+      "path": "skills/skills-codex/shared-references/reviewer-routing.md",
+      "bytes": 5855,
+      "git_blob_sha1": "0ee45f3b735d5bb790191e7de4dfba680c8f01f8",
+      "sha256": "0108f0d2c3b3e36c293f8cc6b7d137444e31b0bebe010110db1c5775919c25ff",
+      "source_match": "exact"
+    }
+  ]
+}

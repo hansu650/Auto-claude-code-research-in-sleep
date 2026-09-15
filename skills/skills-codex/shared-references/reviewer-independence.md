@@ -50,7 +50,7 @@ spawn_agent:
 
 ## Multi-Round Follow-Up
 
-When a skill uses multi-round review, reuse the same reviewer id with `send_input`, but still avoid injecting executor conclusions. Pass revised artifacts or targeted follow-up requests, not spin.
+When a skill uses multi-round review, reuse the same reviewer id with `followup_task`, but still avoid injecting executor conclusions. Pass revised artifacts or targeted follow-up requests, not spin.
 
 ## Applies To
 
@@ -63,4 +63,4 @@ This protocol applies to all cross-agent review calls in `skills/skills-codex/`,
 - `paper-figure`
 - `rebuttal`
 - `meta-optimize`
-- any skill that launches a reviewer via `spawn_agent` or continues one via `send_input`
+- any skill that launches a reviewer via `spawn_agent` or continues one via `followup_task`

@@ -5,9 +5,20 @@ Abstract, Introduction contribution list, Method/analysis section, or Conclusion
 canonical for section structure and cross-section mirroring; use
 `writing-principles.md` for prose style.
 
-These are semantic blueprints, not fill-in-the-blank prose. Adapt them to the paper type,
-venue, and available evidence. Never invent an experiment, number, comparator, protocol,
-or scope qualifier to complete a template.
+These are claim-grounded blueprints, not fill-in-the-blank prose. Resolve the
+active profile in this order: current user/venue requirements, the project's
+approved structure, then a suitable new-draft fallback below. An approved section
+already establishes its structure even without a separate profile field. Do not
+pad a short conclusion or rearrange contribution bullets to match an older
+template. Record the selected counts and roles in the existing plan or section
+notes; a narrow revision need not create a full paper plan.
+
+The 10 / (2,3,3) / 8 profile remains the fallback for a new empirical AI method
+paper. Other paper types need appropriate roles; a compact conclusion may fit a
+paper whose limitations are already discussed separately. Once selected, keep
+the profile stable unless a content or venue need justifies a documented change.
+Never copy exemplar prose or invent evidence to fill a role. The active profile
+takes precedence over every default count mentioned below.
 
 ## 1. One Canonical Claim Ledger
 
@@ -37,23 +48,26 @@ names, scope qualifiers, and limitations everywhere else in the paper.
 
 ## 2. Abstract Blueprint
 
-Use the applicable subset of these semantic moves. They do not imply a fixed sentence
-count or a requirement that every paper contain every move.
+### Empirical AI method default: exactly 10 sentences
 
-1. State the specific setting and why it matters.
-2. Explain what existing approaches do and the unresolved limitation.
-3. State the reframing insight or research question.
-4. For a method paper, name the method and give its overall contract. For a theory,
-   diagnostic, or position paper, name the corresponding analytical object or study
-   design.
-5. When useful, explain one to three component or argument roles in plain language.
-6. State the evaluated scope/protocol and strongest supported evidence.
-7. End with a scope-aware overall takeaway.
+1. **Setting:** state the specific task or setting and why it matters.
+2. **Limitation:** explain what existing approaches do and the unresolved limitation.
+3. **Reframing:** state the paper's key insight or research question.
+4. **Method contract:** name the method and state its overall input-to-output role.
+5. **Mechanism 1:** explain the first main module or operation and its job.
+6. **Mechanism 2:** explain the second module, composition step, or complementary job.
+7. **Design boundary:** state the intended behavior and what remains fixed, excluded, or
+   deliberately unchanged.
+8. **Primary evidence:** give the evaluated scope/protocol and strongest supported result.
+9. **Secondary evidence:** give transfer, robustness, ablation, or independent
+   confirmation; when none exists, state the evidence boundary instead of inventing one.
+10. **Takeaway:** end with the strongest scope-aware conclusion supported by the ledger.
 
 Rules:
 
 - Obey the venue's explicit word limit. If no limit is known, target 150--200 words.
-- Use long and short sentences as clarity requires; do not force one move per sentence.
+- Keep one numbered role per surface sentence. Vary sentence length and syntax for
+  readability; do not create fragments or semicolon chains to game the count.
 - A reference paper may guide rhetorical order or cadence, never reusable prose, claims,
   terminology, or numbers.
 - Do not force stock openers such as "Recent advances" or "Based on this insight."
@@ -64,21 +78,24 @@ Rules:
 
 ## 3. Introduction Contribution Blueprint
 
-Use two to four contribution bullets. For a three-bullet method paper, the default roles
-are:
+### Empirical AI method default: exactly 3 bullets with 2 / 3 / 3 sentences
 
-1. **Problem/formulation:** identify the neglected stage, failure mode, or requirement
-   and formulate it precisely.
-2. **Method/mechanism:** use the method name as the subject when natural; name the main
-   modules and state each module's job.
-3. **Evidence/scope:** state the evaluation protocol, evidence range, strongest supported
-   result, and important transfer or generalization boundary.
+1. **Problem/formulation — 2 sentences:** sentence 1 identifies the neglected stage,
+   failure mode, or requirement; sentence 2 formulates the paper's reframing and scope.
+2. **Method/mechanism — 3 sentences:** sentence 1 states the method's overall contract;
+   sentence 2 states the first module's job; sentence 3 states the complementary module
+   or composition mechanism and its job.
+3. **Evidence/scope — 3 sentences:** sentence 1 states the evaluation protocol and scope;
+   sentence 2 reports the canonical headline result; sentence 3 reports independent or
+   secondary evidence and its transfer/generalization boundary. If no secondary evidence
+   exists, sentence 3 states that evidence boundary without implying a missing result.
 
 Rules:
 
 - Map every bullet to one or more Claim IDs and evidence entries.
 - Do not begin every adjacent bullet with "We" merely out of habit.
-- Do not force exactly three bullets when the claim structure needs two or four.
+- Preserve the `2 / 3 / 3` sentence allocation unless an explicit replacement profile is
+  recorded before drafting.
 - Make bullets specific and falsifiable; "we conduct extensive experiments" is not a
   contribution.
 - Do not promote descriptive, oracle, conditional, or selected-case evidence into a
@@ -114,21 +131,47 @@ Do not present a naked equation and postpone its purpose until a later paragraph
 
 ## 5. Conclusion Blueprint
 
+### Empirical AI method default: exactly 8 sentences
+
 Follow the same claim order as the paper without copying the Introduction verbatim:
 
-1. problem and reframing;
-2. method or analytical object and component roles;
-3. strongest supported evidence;
-4. evaluated scope and limitations;
-5. Future Work as a separate paragraph when venue space permits;
-6. an optional final takeaway that does not broaden the claim.
+1. **Answer:** name the method and state the paper's direct answer to the problem.
+2. **Mechanism:** summarize the main modules and their complementary roles.
+3. **Primary evidence:** restate the strongest supported evaluation result at the proper
+   scope.
+4. **Secondary evidence:** state transfer, robustness, ablation, or independent
+   confirmation; if unavailable, state the evidence boundary.
+5. **Interpretation:** say what the supported evidence attributes to the main components
+   or design choices without claiming causality beyond the experiments.
+6. **Limitation:** state the most important scope or deployment limitation.
+7. **Practical takeaway:** state what the method enables within the evaluated setting.
+8. **Significance:** close with the broader technical meaning without expanding the claim.
 
 Hard rules:
 
 - No method, number, comparator, dataset, protocol, or claim may first appear in the
   Conclusion.
 - Names and scope qualifiers must match the Claim Ledger.
-- Future work must follow from a stated limitation; avoid generic promises.
+- Do not append generic Future Work to fill a count. Preserve existing or required
+  Limitations/Future Work sections outside the Conclusion count; keep their scope
+  consistent with the ledger.
+
+### Compact alternative: five sentences when the roles fit
+
+For a concise empirical paper, especially with limitations discussed separately:
+
+1. **Answer:** name the method and the problem it addresses.
+2. **First mechanism:** say which error or failure it targets and how.
+3. **Complementary mechanism:** say what the other component addresses and how it
+   combines with the first. If there is no second component, use another supported
+   method property; do not invent a module.
+4. **Primary evidence:** retain the canonical comparator, aggregation, and scope.
+5. **Bounded takeaway:** state the supported conclusion or the key evidence boundary.
+
+This is an option, not a new universal count. Keep limitations nearby in the paper
+without repeating them mechanically. Semantic mirroring is required; an author-
+approved headline result may repeat exactly when that preserves precision. Avoid
+copying whole paragraphs or changing numbers/comparators merely to vary the prose.
 
 ## 6. Front-Matter Coverage Index
 
@@ -149,4 +192,7 @@ Before considering the front matter and conclusion complete, verify:
 - every supported contribution is reflected in the Conclusion;
 - Abstract and Conclusion use the same canonical comparator, number, and scope qualifier;
 - the Conclusion introduces no new claim;
-- terminology is consistent while sentences are not copied verbatim across sections.
+- the active sentence profile is recorded and satisfied exactly: for the empirical AI
+  method default, Abstract = 10 sentences, contribution bullets = 2 / 3 / 3 sentences,
+  and Conclusion = 8 sentences;
+- terminology is consistent; repeated headline wording is intentional, and surrounding prose serves each section's role.

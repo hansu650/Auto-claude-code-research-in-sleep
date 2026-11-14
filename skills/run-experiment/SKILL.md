@@ -9,6 +9,20 @@ allowed-tools: Bash(*), Read, Grep, Glob, Edit, Write, Skill(serverless-modal)
 
 Deploy and run ML experiment: $ARGUMENTS
 
+## Fixed execution or authorized research iteration
+
+For a specified run list, execute that scope. When the user asks to diagnose
+results and keep improving the method, use
+[experiment-iteration.md](../shared-references/experiment-iteration.md) for the
+hypothesis loop and server handoff. Continue reversible implementation and
+verification within existing authorization, preserving the experiment state
+and rejected candidates. A skill invocation or server configuration alone is
+not permission for new paid resources, broader data access, or external messages.
+
+If asked to monitor a run to completion, continue checking the actual process
+and outputs in the current task; a successful launch is only an intermediate
+milestone. Use the available monitoring/queue tools as appropriate.
+
 ## Workflow
 
 ### Step 1: Detect Environment
@@ -29,13 +43,21 @@ changed one means rebuild. New env → write the declarative spec first, render 
 for this provider's shape, and never declare it ready on import-success alone:
 run the seeded kernel witness, and after any rebuild/doc edit run the
 agent-follows-doc pass (a fresh subagent executes the documented invocation
-verbatim and reports doc-vs-reality divergence).
+verbatim and reports doc-vs-reality divergence). These are environment checks,
+not a scientific-review gate before every iteration. Respect explicit delegation
+limits and report an unperformed independent tier honestly; do not repeat passed
+checks on an unchanged same-task environment.
 
 **Vast.ai detection priority:**
 1. If `CLAUDE.md` has `gpu: vast` or a `## Vast.ai` section:
    - If `vast-instances.json` exists and has a running instance → use that instance
    - If no running instance → call `/vast-gpu provision` which analyzes the task, presents cost-optimized GPU options, and rents the user's choice
-2. If no server info is found in `CLAUDE.md`, ask the user.
+2. Resolve missing server details from current run notes, the launch summary,
+and already-authorized session context before asking for a genuinely missing
+endpoint or resource decision. Within the same task, reuse verified environments,
+data and compatible feature caches; respect task-isolation rules for new tasks.
+Recheck only the changed dependencies, execution profile, or uncertain state.
+Cache compatibility includes data/preprocessing identity, not just its filename.
 
 ### Step 2: Pre-flight Check
 
@@ -59,11 +81,21 @@ nvidia-smi --query-gpu=index,memory.used,memory.total --format=csv,noheader
 python -c "import torch; print('MPS available:', torch.backends.mps.is_available())"
 ```
 
-Free GPU = memory.used < 500 MiB.
+Determine availability from the authorized allocation, device capacity, active
+jobs/process ownership, utilization and memory use. A fixed memory threshold is
+not a universal free-GPU rule. Before launching, match the experiment identity
+(parent checkpoint, code/config, data, seed and output location) against active
+jobs, queue entries and completed runs. Reattach or resume the matching run;
+do not create a duplicate because a screen name or local PID is missing.
 
 ### Step 3: Sync Code (Remote Only)
 
 Check the project's `CLAUDE.md` for a `code_sync` setting. If not specified, default to `rsync`.
+
+Sync into a versioned run directory or immutable checkout when an existing job
+could still read the code. Do not overwrite scientific code/configuration under
+a running job, including through a shared checkout. Reuse unchanged compatible
+data and caches rather than copying or rebuilding them for every candidate.
 
 #### Option A: rsync (default)
 
@@ -222,6 +254,16 @@ modal app logs <app>   # Stream logs
 
 **Local:**
 Check process is running and GPU is allocated.
+
+### Step 5.5: Close the requested execution or iteration
+
+For completion/analysis requests, verify process exit, planned task coverage,
+finite metrics, and result-to-checkpoint association. A process disappearing
+or a JSON file existing does not prove successful completion. Preserve failures
+and partial results. For an authorized research loop, compare the completed
+block against the recorded hypothesis, choose the next discriminating test,
+and continue within the agreed scope and budget. If only launch was requested,
+report the verified running state without claiming completed results.
 
 ### Step 6: Feishu Notification (if configured)
 

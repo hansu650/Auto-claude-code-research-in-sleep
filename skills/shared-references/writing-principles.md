@@ -4,6 +4,10 @@ Use this reference when `paper-plan` needs help shaping the paper's story or whe
 
 This is the expanded English counterpart to the detailed Chinese version. It is not a new workflow phase. Its purpose is to provide a stronger writing model on top of the existing `insleep` pipeline.
 
+Use the active-profile precedence in `section-blueprints.md`. Counts below are
+new-draft fallbacks, not instructions to reshape author-approved text. Preserve
+the project's selected profile and any declared text locks.
+
 ## Contents
 
 - [When to Read](#when-to-read)
@@ -11,8 +15,10 @@ This is the expanded English counterpart to the detailed Chinese version. It is 
 - [Time Allocation and Reviewer Reading Order](#time-allocation-and-reviewer-reading-order)
 - [How to Write the Abstract](#how-to-write-the-abstract)
 - [Introduction Structure](#introduction-structure)
+- [How to Write the Conclusion](#how-to-write-the-conclusion)
 - [Sentence-Level Clarity](#sentence-level-clarity)
 - [Micro-Level Writing Tactics](#micro-level-writing-tactics)
+- [Evidence-led Revision](#evidence-led-revision)
 - [Word Choice and Precision](#word-choice-and-precision)
 - [Mathematical Writing](#mathematical-writing)
 - [Figure Design](#figure-design)
@@ -96,10 +102,12 @@ Most reviewers encounter the paper in this order:
 ## How to Write the Abstract
 
 Use the semantic moves and evidence rules in
-[`section-blueprints.md`](section-blueprints.md). They are intentionally not a fixed
-sentence template: a method, theory, diagnostic, and position paper need different
-subsets. Obey the venue's explicit word limit; when none is known, 150--200 words is a
-useful default target.
+[`section-blueprints.md`](section-blueprints.md). For an empirical AI method paper, use
+its **exact 10-sentence profile**: setting, limitation, reframing, method contract, two
+mechanism sentences, design boundary, primary evidence, secondary evidence or its
+boundary, and a scope-aware takeaway. This fixes the rhetorical logic, not the prose:
+every sentence must still be written from the paper's own Claim Ledger. Obey the venue's
+explicit word limit; when none is known, 150--200 words is a useful default target.
 
 At the prose level, a good abstract should:
 
@@ -130,7 +138,8 @@ In two-column conference papers, the Introduction is usually best at about 1-1.5
 It should satisfy the following:
 
 - the method should start appearing by page 2-3 at the latest,
-- the Introduction should include 2-4 contribution bullets,
+- an empirical AI method paper should include exactly three contribution bullets with
+  `2 / 3 / 3` sentences,
 - the central story should already make sense before technical detail arrives.
 
 ### Recommended Rhetorical Flow
@@ -148,7 +157,9 @@ It should satisfy the following:
    - What is the key insight?
 
 4. **Contribution bullets**
-   - 2-4 items, each mapped to a Claim ID and evidence location
+   - exactly three for the empirical AI method default, each mapped to a Claim ID and
+     evidence location
+   - 2 sentences for problem/formulation, 3 for method/mechanism, and 3 for evidence/scope
    - specific and falsifiable
    - role-based rather than forced into identical "We ..." openings
 
@@ -163,6 +174,17 @@ Use [`section-blueprints.md`](section-blueprints.md) for the contribution-role p
 Method contract, Conclusion mirror, and front-matter coverage index. The problem with a
 bullet such as “we perform extensive experiments” is not grammar; it is that a reviewer
 cannot cleanly agree, disagree, or challenge it.
+
+## How to Write the Conclusion
+
+For an empirical AI method paper, use the **exact 8-sentence profile** in
+[`section-blueprints.md`](section-blueprints.md): answer, mechanism, primary evidence,
+secondary evidence or its boundary, supported interpretation, limitation, practical
+takeaway, and broader technical significance. Follow the active profile, which
+may use the compact alternative. Keep the Claim Ledger order and preserve precise
+headline wording when useful; avoid copying whole paragraphs. Existing or required
+separate Limitations/Future Work sections sit outside the Conclusion count; do not
+append generic future work merely to make the ending longer.
 
 ## Sentence-Level Clarity
 
@@ -296,6 +318,78 @@ A useful paragraph skeleton is:
 
 Do not bury the key sentence in the middle.
 
+## Evidence-led Revision
+
+### Revise the reasoning before polishing the sentence
+
+For the requested paragraph, identify its job, the evidence it uses, and the
+specific point the reader should retain. Repair unclear comparisons, missing
+definitions, or unsupported causal language before swapping vocabulary.
+Split a sentence when it mixes distinct reasoning steps; keep necessary scope
+qualifiers attached to the claim. Do not turn every sentence into the same
+length or force repeated "We" / "This demonstrates" openings.
+
+When the user requests sentence-by-sentence review, show the complete original
+and proposed replacement with a brief reason. Explain in the user's language
+while preserving the manuscript's language. When direct editing is authorized,
+make the scoped revision and report it without inventing an approval loop.
+
+### Method paragraphs
+
+- Name the error or failure a component addresses before describing its steps.
+  Use concrete objects and verbs: what enters, what changes, what is retained,
+  and what is passed onward. Avoid repeating "effective" or "powerful" as a
+  substitute for the operation.
+- Separate algebraic properties from empirical effects. Orthogonality of
+  outputs, an exact loss decomposition, independent parameters, and independent
+  optimization are different claims. Check shared inputs, parameters, and
+  objectives before inferring one from another.
+- Keep the overall data flow in Overview, the operation in the module section,
+  and experimental settings in Setup. Remove duplicated explanation only after
+  checking that a reader still has the information needed at first use.
+
+### Results paragraphs and tables
+
+Lead with the strongest supported finding, then the evidence and the exception
+that changes its interpretation. Let the table carry most cell values. Repeat
+numbers in prose when they carry the headline result or make a comparison
+unambiguous. If both metrics move together, a defined "error" may suffice;
+name the metrics when they diverge or when defining the measurement.
+
+State shared settings once in Setup; keep local exceptions beside the relevant
+comparison. Table headers and row labels should identify the compared systems.
+Explain an unfamiliar abbreviation at first use, without making readers chase
+several sections to understand a panel. Preserve essential conditions when
+shortening captions or merging protocol prose.
+
+Keep the comparator and aggregation explicit: an average across baselines is
+not the strongest baseline, a mean of relative improvements is not a relative
+improvement of means, and one-seed results are not multi-seed estimates. Use
+"lower mean error" for an observed mean difference; "statistically significant"
+requires an appropriate test or interval. A few same-direction seed results do
+not establish significance. Describe rounded ties according to the declared
+table rule, not as a strict win inferred from bold text.
+
+Distinguish **supported**, **suggestive but insufficient**, and **not ascertainable
+from the available artifact**. Missing reporting does not prove an experiment
+was never run. A mathematical identity does not itself establish empirical
+novelty, and selected examples illustrate behavior rather than its prevalence.
+
+### Related work and section consistency
+
+Compare methods along a concrete axis such as the object corrected, accessible
+inputs, objective, or trainable parts. State the paper's difference without
+claiming all prior work lacks an ability that was not checked. Place a model's
+citation with its name when consistent with the venue style; place broader
+evidence with the claim it supports. Natural contrasts are useful when they
+express a real difference, not merely vary the wording.
+
+Recheck Abstract, contribution bullets, results, and Conclusion after a factual
+change: comparator, scope, aggregation, and caveats must still match. For locked
+sections, flag the affected exact sentences for the agreed review process.
+Stop once the requested prose is clear, faithful, and consistent; do not run
+another full-paper rewrite merely to pursue a higher stylistic score.
+
 ## Word Choice and Precision
 
 ### Zachary Lipton Style: Remove Needless Hedging
@@ -331,23 +425,12 @@ For example, avoid mixing:
 
 Choose the best term and keep it stable.
 
-### Vocabulary Signaling
+### Describe the Actual Contribution
 
-Some verbs make the work sound like a loose combination of existing pieces:
-
-- combine
-- modify
-- extend
-- expand
-
-Stronger alternatives are often:
-
-- develop
-- propose
-- introduce
-- characterize
-
-This is not about mechanical substitution. It is about how wording changes a reviewer's intuition about whether the work is a real contribution.
+Choose verbs for what the method does. Use "combine", "modify", or "extend"
+when accurate; do not replace them with "develop" or "introduce" to imply
+greater novelty. Explain the substantive difference through the changed
+operation, information access, objective, or guarantee and its evidence.
 
 ## Mathematical Writing
 
@@ -416,7 +499,7 @@ artifact supports. Prefer vector plots and avoid decorative titles inside figure
 |--------|-----|
 | Introduction longer than 1.5 pages | Move background to Related Work |
 | Method buried too late | Front-load the contribution and compress the intro |
-| Missing contribution bullets | Add 2-4 concrete claims |
+| Contribution structure drifts | Restore the empirical method default of 3 bullets with 2 / 3 / 3 sentences, or record an explicit override profile |
 | Experiments not tied to claims | State what each experiment tests |
 
 ### Writing Mistakes
@@ -456,11 +539,13 @@ artifact supports. Prefer vector plots and avoid decorative titles inside figure
 
 ### Structure
 
-- [ ] The Abstract uses the applicable semantic moves in `section-blueprints.md` and
-      obeys the venue word limit.
+- [ ] For an empirical AI method paper, the Abstract has exactly 10 sentences in the
+      role order defined by `section-blueprints.md` and obeys the venue word limit.
 - [ ] The Introduction stays within about 1-1.5 pages.
 - [ ] The method starts by page 2-3.
-- [ ] There are 2-4 concrete contribution bullets.
+- [ ] There are exactly 3 concrete contribution bullets with 2 / 3 / 3 sentences.
+- [ ] The Conclusion has exactly 8 sentences in the defined role order and introduces
+      no new claim.
 - [ ] Limitations are clearly stated.
 
 ### Writing

@@ -40,6 +40,19 @@ Assemble the key information:
 - The intended claim these experiments were designed to test
 - Any known confounds or caveats
 
+For iterative studies, apply the evidence-boundary section of
+[experiment-iteration.md](../shared-references/experiment-iteration.md). Pass
+the reviewer baseline provenance, exact compared checkpoints/configurations,
+development/confirmation status, all planned outcomes, and the aggregation rule.
+Separate a lower observed mean from statistical significance, and missing
+reporting from evidence that a procedure was not performed. Repeatedly exposed
+test benchmarks remain development evidence even after adding random seeds.
+Assess separately: observed metric improvement, evidence for the proposed
+mechanism, novelty relative to verified literature, and confirmatory support.
+One cannot substitute for another. A preserved subspace or an exact identity is
+not a guarantee that total error improves; a better score does not establish
+novelty, and reevaluating saved weights is not training from scratch.
+
 ### Step 1.5: Deterministic evidence pre-check
 
 Before the reviewer call, resolve and run `evidence_check.py` per

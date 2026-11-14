@@ -18,6 +18,14 @@ The goal is not to generate a giant benchmark wishlist. The goal is to turn a pr
 3. the method is elegant enough that extra complexity is unnecessary
 4. any frontier-model-era component is genuinely useful, not decorative
 
+## Iteration and comparison guidance
+
+When selecting baselines, planning controls, continuing after mixed results, or
+preparing a server handoff, read the relevant sections of
+[experiment-iteration.md](../shared-references/experiment-iteration.md). Reuse
+the current verified experiment state. The workflow below plans evidence; it
+does not itself authorize launching jobs or expanding compute spending.
+
 ## Constants
 
 - **OUTPUT_DIR = `refine-logs/`** — Default destination for experiment planning artifacts.
@@ -45,7 +53,11 @@ Extract:
 - **Data / compute / timeline constraints**
 - **Which frontier primitive is central, if any**
 
-If these files do not exist, derive the same information from the user's prompt.
+If these files do not exist, derive the same information from the user's prompt
+and available project artifacts. For an ongoing project, start with the latest
+verified state, result/checkpoint registry, active jobs, and failed hypotheses.
+Identify which evidence remains reusable and which exact gap needs a new run;
+do not schedule completed work again solely because the plan has a new version.
 
 ### Phase 1: Freeze the Paper Claims
 
@@ -88,6 +100,8 @@ For every kept block, fully specify:
 - **Compared systems**: strongest baselines, ablations, and variants only
 - **Metrics**: decisive metrics first, secondary metrics second
 - **Setup details**: backbone, frozen vs trainable parts, key hyperparameters, training budget, seeds
+- **Provenance and selection**: published/reproduced source, exact base checkpoint, development versus confirmation use, validation selection rule
+- **Controlled comparison**: what changes, what is held fixed, and which alternative explanation the comparison can distinguish
 - **Success criterion**: what outcome would count as convincing evidence?
 - **Failure interpretation**: if the result is negative, what does it mean?
 - **Table / figure target**: where this result should appear in the paper
@@ -151,6 +165,9 @@ Use this structure:
 - Compared systems:
 - Metrics:
 - Setup details:
+- Provenance and selection:
+- Controlled comparison:
+- Reusable evidence / new runs needed:
 - Success criterion:
 - Failure interpretation:
 - Table / figure target:

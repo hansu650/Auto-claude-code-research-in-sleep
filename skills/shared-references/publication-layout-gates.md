@@ -90,6 +90,22 @@ After compilation, inspect:
 
 Check for clipping, overlap, formula/table collisions, column drift, unreadable reduction, caption overflow, abnormal whitespace, and float reordering across important section boundaries. Re-run the standalone gate if integration required resizing or redesign.
 
+## Source, export, and manuscript consistency
+
+When an editable figure/table, standalone export, and manuscript copy coexist,
+record which source produced the active export and which file the manuscript
+actually includes. Compare copy hashes when they should be identical; hashes
+prove identity, not visual or numerical correctness. For tables, check displayed
+values, rounding, uncertainty notation, and emphasis against the approved source.
+If a value changes, revisit the affected comparisons and claims as well as the
+export. Preserve author-approved caption text unless its revision is authorized.
+
+For diagrams, follow the active project font/math conventions and verify actual
+exported rendering. Preserve editable sources. A valid source formula or font
+name is not proof that the export rendered it correctly. After moving or resizing
+an object, inspect its section heading, caption, and nearby reading paragraph
+together. A figure-first layout is acceptable when the sequence remains clear.
+
 ## Completion Evidence
 
 A layout check is complete only when it reports:

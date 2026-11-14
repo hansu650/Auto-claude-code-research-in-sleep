@@ -113,6 +113,10 @@ Invoke `/paper-figure` to generate data-driven plots and tables:
 
 #### Phase 2b: Architecture and Illustration Artifacts
 
+The `figurespec` route uses `/figure-spec` through `/paper-figure`.
+Retain that installation dependency; `/paper-figure` owns delegation and the
+standalone artifact gate.
+
 If the Figure/Table Layout Contract includes architecture diagrams, pipeline
 figures, or method illustrations, **re-invoke the Gemini overlay of
 `/paper-figure` as the sole artifact owner**:

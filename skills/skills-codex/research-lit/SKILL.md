@@ -1,11 +1,31 @@
 ---
 name: "research-lit"
-description: "Search and synthesize academic literature across papers for a research topic, related-work comparison or literature review. Use for 找相关论文, 文献综述, find papers or compare research approaches. For explaining one supplied paper, prefer a single-paper reader such as alphaxiv or deepxiv unless broader comparison is requested."
+description: "Search and synthesize academic literature across papers for a topic, related-work comparison, or a concrete mechanism question arising from experiments. Use for 找相关论文, 文献综述, 定向查机制, find papers, or compare research approaches. For explaining one supplied paper, prefer a single-paper reader such as alphaxiv or deepxiv unless broader comparison is requested."
 ---
 
 # Research Literature Review
 
 Research topic: $ARGUMENTS
+
+## Focused mechanism question or broad review
+
+For a concrete experimental question, use a focused pass instead of the full
+survey workflow: state the unresolved mechanism, inspect relevant local sources,
+then fill the gap from primary papers and their official implementations. Read
+the needed method/training sections and code, not only introductory pages.
+Return the operation or condition found, a precise source location, its fit to
+the current hypothesis, and what remains unverified. Distinguish borrowed
+components from the proposed contribution; finding a useful component does not
+establish novelty of its combination.
+
+Stop when the question is answered or the remaining gap is clear; do not force
+a paper quota, landscape report, or another review before an otherwise ready
+experiment. Reuse the project's notes. Optional fetch/verification helpers may
+be replaced by direct source inspection with the method disclosed. Missing
+optional tools do not block unrelated research, but missing evidence still
+limits the claim. Honor explicitly required sources and access restrictions.
+
+The broader workflow and its deliverables below remain for topic-level reviews.
 
 ## Constants
 

@@ -1,6 +1,6 @@
 ---
 name: research-refine
-description: 'Turn a vague research direction into a problem-anchored, elegant, frontier-aware, implementation-oriented method plan via iterative GPT-5.6-Sol review. Use when the user says "refine my approach", "帮我细化方案", "decompose this problem", "打磨idea", "refine research plan", "细化研究方案", or wants a concrete research method that stays simple, focused, and top-venue ready instead of a vague or overbuilt idea.'
+description: "Refine a vague research direction into a concrete method proposal, or use existing code and real experiment results to diagnose failures and choose the next bounded improvement. Use for refine my approach, 打磨 idea, 细化研究方案, 已有实验继续找改进, or handing an experiment machine responsibility for its next research step. Proposal review and experiment-driven iteration are separate modes; execution stays within existing authorization."
 allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, WebSearch, WebFetch, mcp__codex__codex, mcp__codex__codex-reply
 ---
 
@@ -8,7 +8,27 @@ allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, WebSearch, WebFetch, mcp_
 
 Refine and concretize: **$ARGUMENTS**
 
-## Overview
+## Select the requested mode
+
+- **Proposal refinement:** a vague direction or an explicit request to review a
+  proposal uses the original phases below, including their review and output rules.
+- **Experiment-driven iteration:** runnable code and real results are available,
+  and the user asks to diagnose failure, find improvements, or let the experiment
+  executor choose its next step. Follow
+  [experiment-iteration.md](../shared-references/experiment-iteration.md) directly.
+  Start from observed behavior and code constraints, choose a discriminating
+  experiment, and implement/run only within existing authorization. A plan-only
+  request ends with the bounded plan. Do not first require proposal review scores,
+  a new full proposal, or an external ideation response for each iteration.
+
+The constants, checkpoint scheme, review phases, and proposal output templates
+below belong to proposal mode. Experiment mode reuses the current experiment
+state and failure log. Honor explicit user/project review and delegation rules;
+do not add an independent review gate to ordinary exploratory changes. This does
+not waive a separately requested review or submission-facing evidence gate.
+If the request is only to edit skills, neither mode launches research jobs.
+
+## Overview (proposal mode)
 
 Use this skill when the research problem is already visible but the technical route is still fuzzy. The goal is not to produce a bloated proposal or a benchmark shopping list. The goal is to turn a vague direction into a **problem -> focused method -> minimal validation** document that is concrete enough to implement, elegant enough to feel paper-worthy, and current enough to resonate in the foundation-model era.
 
@@ -95,7 +115,7 @@ refine-logs/
 
 Every `round-N-refinement.md` must contain a **full anchored proposal**, not just incremental fixes.
 
-## Workflow
+## Workflow (proposal mode)
 
 ### Initialization (Checkpoint Recovery)
 
@@ -152,6 +172,18 @@ Check `papers/` and `literature/` first. Read only the relevant parts needed to 
 - What details distinguish a real method from a renamed high-level idea?
 
 If local material is insufficient, search recent top-venue/arXiv work online. Focus on **method sections, training setup, and failure modes**, not just abstracts.
+
+When the research starting point or baseline is still being chosen, use the
+baseline-selection section of
+[experiment-iteration.md](../shared-references/experiment-iteration.md): fit to
+the problem, inspectable evidence of a failure, reproducible official assets,
+and feasible validation cost matter more than recency alone. Distinguish this
+research anchor from the eventual paper's comparison set.
+
+When returning after experiments, load the latest verified results and rejected
+hypotheses before proposing another mechanism. If the method or base changes,
+mark which earlier controls no longer apply; an old variant's ablation is not
+automatically evidence for the new one.
 
 #### Step 1.2: Identify the Technical Gap
 
@@ -727,7 +759,7 @@ Suggested next step: /experiment-plan
 > - **[Output Manifest Protocol](../shared-references/output-manifest.md)** — log every output to MANIFEST.md
 > - **[Output Language Protocol](../shared-references/output-language.md)** — respect the project's language setting
 
-## Key Rules
+## Key Rules for proposal mode
 
 - **Large file handling**: If the Write tool fails due to file size, immediately retry using Bash (`cat << 'EOF' > file`) to write in chunks. Do NOT ask the user for permission — just do it silently.
 
@@ -741,7 +773,7 @@ Suggested next step: /experiment-plan
 - **Pushback is encouraged.** If reviewer feedback causes drift or unnecessary complexity, argue back with evidence.
 - **ALWAYS use `config: {"model_reasoning_effort": "xhigh"}`** for all Codex review calls.
 - **Save `threadId` from Phase 2** and use `mcp__codex__codex-reply` for later rounds.
-- **Do not fabricate results.** Only describe expected evidence and planned experiments.
+- **Do not fabricate results.** Distinguish actual prior results from expected evidence and planned experiments.
 - **Be specific about compute and data assumptions.** Vague "we'll train a model" is not enough.
 - **Document everything.** Save every raw review, every anchor check, every simplicity check, and every major method change.
 

@@ -282,6 +282,10 @@ Invoke `/paper-figure` to generate data-driven plots and tables:
 
 #### Phase 2b: Architecture & Illustration Generation
 
+The `figurespec` route uses `/figure-spec` through `/paper-figure`.
+Retain that installation dependency; `/paper-figure` owns delegation and the
+standalone artifact gate.
+
 `illustration: false` or `manual` skips generation only, never validation.
 For every supplied or planned manual artifact, call the same owner with
 `diagram-backend: manual`; a missing artifact blocks only that semantic label.

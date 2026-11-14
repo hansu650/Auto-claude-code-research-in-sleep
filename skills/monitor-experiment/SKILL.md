@@ -110,6 +110,16 @@ https://wandb.ai/<entity>/<project>/runs/<run_id>
 
 > This gives the auto-review-loop richer signal than just screen output — training dynamics, loss curves, and metric trends over time.
 
+### Step 3.6: Verify actual completion
+
+Associate the process/scheduler run, configuration, seed, logs, result and
+checkpoint before interpreting status. Check actual exit state and the planned
+task identities against completed, failed, pending and still-running tasks.
+Validate finite metrics and expected evaluation coverage where available. An
+unreachable process, stale summary, directory, or JSON file alone proves neither
+success nor failure. If 6 of 12 tasks finished, report 6/12 and recover the rest
+by identity within the existing authorization; do not count plans as execution.
+
 ### Step 4: Summarize Results
 
 Present results in a comparison table:
@@ -121,13 +131,23 @@ Present results in a comparison table:
 ```
 
 ### Step 5: Interpret
-- Compare against known baselines
-- Flag unexpected results (negative delta, NaN, divergence)
-- Suggest next steps based on findings
+- Compare against known baselines with their actual protocol and checkpoint identity.
+- Flag unexpected results (negative delta, NaN, divergence).
+- For an active hypothesis, report the signals that can change the next decision:
+  training/validation divergence, epoch-0 selections, update magnitude, branch
+  contribution, or mechanism activation/intervention frequency when relevant.
+  Instrument only what the question needs; missing diagnostics remain unknown.
+- Use [experiment-iteration.md](../shared-references/experiment-iteration.md) to
+  separate observation, explanation and next test. A monitor-only request reports
+  status and suggestions; an already-authorized research loop can continue.
+- Keep independently ready authorized jobs progressing while preparing CPU-side
+  analysis. Changes that depend on pending results wait for those results. A queue
+  can execute fixed jobs; novel research decisions require an active executor.
+  Do not promise indefinite continuation unsupported by the available tools.
 
 ### Step 6: Feishu Notification (if configured)
 
-After results are collected, check `~/.claude/feishu.json`:
+After results are collected, send only when the user has explicitly authorized notifications and `~/.claude/feishu.json` is configured:
 - Send `experiment_done` notification: results summary table, delta vs baseline
 - If config absent or mode `"off"`: skip entirely (no-op)
 

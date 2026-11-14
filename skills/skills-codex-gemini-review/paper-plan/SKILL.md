@@ -47,7 +47,7 @@ defensible outline.
 ## Orchestra-Guided Writing Overlay
 
 - Read `../shared-references/writing-principles.md` when framing prose or narrative.
-- Read `../shared-references/section-blueprints.md` **mandatorily** when planning a claim-bearing Abstract, Introduction contribution list, Method/analysis section, or Conclusion. Its Claim Ledger and mirror contract supersede rigid sentence templates.
+- Read `../shared-references/section-blueprints.md` **mandatorily** when planning a claim-bearing Abstract, Introduction contribution list, Method/analysis section, or Conclusion. Its Claim Ledger, fixed-count front-matter profile, and mirror contract are canonical.
 - Read `../shared-references/publication-layout-gates.md` **mandatorily** when planning any figure or table.
 - Read `../shared-references/venue-checklists.md` before freezing a venue-specific outline.
 
@@ -118,13 +118,29 @@ Theory papers should:
 6. Conclusion (0.5 pages)
 ```
 
+### Step 2.5: Fix the Front-Matter Sentence Profile
+
+Use the precedence in `section-blueprints.md`: current user/venue requirements,
+then the project's approved profile, then a suitable new-draft fallback. Existing
+approved prose establishes its structure even if no profile field was recorded.
+The empirical-method fallback is Abstract 10, contribution bullets `2 / 3 / 3`,
+Conclusion 8; the compact Conclusion is an alternative when it fits the evidence.
+Do not reshape an approved section merely to match a template.
+
+Record the selected counts and role sequence in `PAPER_PLAN.md`, or existing
+section notes for a narrow task. Other paper types need their own roles. Preserve
+the selection during revision; if content or venue constraints require a change,
+explain it and follow any author-review requirement already in force. Never fill
+a role with an unsupported result or duplicate limitation just to meet a count.
+
 ### Step 3: Section-by-Section Planning
 
 For each section, specify:
 
 ```markdown
 ### §0 Abstract
-- **Semantic moves**: [applicable setting, gap, reframing, method/analysis, component roles, evidence/scope, takeaway from `section-blueprints.md`]
+- **Sentence profile**: [empirical AI method default = exactly 10 sentences; otherwise the recorded exact override]
+- **Sentence roles**: [setting → limitation → reframing → method contract → mechanism 1 → mechanism 2 → design boundary → primary evidence → secondary evidence/boundary → takeaway]
 - **Canonical claims**: [Claim IDs represented]
 - **Headline evidence**: [canonical comparator/result/scope, if applicable]
 - **Estimated length**: [venue limit; otherwise 150-200 words]
@@ -134,7 +150,7 @@ For each section, specify:
 - **Opening hook**: [1-2 sentences that motivate the problem]
 - **Gap**: [what's missing in prior work]
 - **Key questions**: [the research questions this paper answers]
-- **Contributions**: [2-4 role-based bullets, specific and falsifiable, each mapped to Claim IDs and evidence]
+- **Contributions**: [empirical AI method default = exactly 3 role-based bullets with 2 / 3 / 3 sentences: problem/formulation, method/mechanism, evidence/scope; each mapped to Claim IDs and evidence]
 - **Hero figure**: [describe what Figure 1 should show — MUST include clear comparison if applicable]
 - **Estimated length**: 1.5 pages
 - **Key citations**: [3-5 papers to cite here]
@@ -163,9 +179,10 @@ For each section, specify:
 - **Data source**: [which JSON files / experiment results]
 
 ### §5 Conclusion
-- **Claim-order mirror**: [problem/reframing → method/analysis → evidence → scope/limitations]
+- **Sentence profile**: [empirical AI method default = exactly 8 sentences; otherwise the recorded exact override]
+- **Sentence roles**: [answer → mechanism → primary evidence → secondary evidence/boundary → interpretation → limitation → practical takeaway → significance]
 - **No-new-claim check**: [no new method, number, comparator, dataset, protocol, or claim]
-- **Future Work**: [separate paragraph derived from a stated limitation, when space permits]
+- **Separate sections**: [existing or required/useful Limitations/Future Work, outside the active Conclusion count]
 - **Estimated length**: 0.5 pages
 ```
 
@@ -226,6 +243,7 @@ mcp__gemini-review__review_start:
     5. Page budget feasibility (MAX_PAGES = main body to Conclusion end, excluding refs/appendix)
     6. Claim mirroring — do Abstract, contribution bullets, body, evidence, and Conclusion preserve the same comparator, result, protocol, and scope?
     7. Publication layout — does every figure/table have a width, placement, preservation, caption, and priority contract?
+    8. Sentence-profile compliance — are the planned counts and roles exact (empirical AI method default: Abstract 10, contributions 2/3/3, Conclusion 8)?
 
     For each weakness, suggest the MINIMUM fix.
     Be specific and actionable — "add X" not "consider more experiments".
@@ -245,6 +263,7 @@ Save the final outline to `PAPER_PLAN.md` in the project root:
 **Title**: [working title]
 **Venue**: [target venue]
 **Type**: [empirical/theory/method]
+**Front-matter sentence profile**: [empirical AI method default: Abstract 10; contributions 2 / 3 / 3; Conclusion 8, or an explicit exact override]
 **Date**: [today]
 **Page budget**: [MAX_PAGES] pages (main body to Conclusion end, excluding references & appendix)
 **Section count**: [N] (must match the number of section files that will be created)
@@ -292,6 +311,7 @@ Save the final outline to `PAPER_PLAN.md` in the project root:
 - **MAX_PAGES counts main body only** — from first page to end of Conclusion. References and appendix are NOT counted.
 - **Venue-specific norms** — all three venues (ICLR/NeurIPS/ICML) use `natbib` (`\citep`/`\citet`)
 - **The Canonical Claim Ledger is the backbone** — every claim must map to evidence, every experiment must support a claim, and no duplicate claim store may drift from it
+- **Freeze sentence logic before drafting** — counts and roles are fixed by the active profile; they never justify invented content
 - **Figures need detailed descriptions** — especially the hero figure, which must clearly specify comparisons and visual expectations
 - **Section count is flexible** — 5-8 sections depending on paper type. Don't force content into a rigid 5-section template.
 

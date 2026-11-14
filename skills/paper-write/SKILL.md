@@ -19,6 +19,28 @@ Draft a LaTeX paper based on: **$ARGUMENTS**
 - Stay project-neutral: do not assume any paper, method, dataset, metric, filename, numbering, venue, build tool, or result that is not stated or discovered.
 <!-- END ARIS NEUTRAL: COLD START -->
 
+## Respect User-Approved Text Locks
+
+If the user or project designates a section lock/hash manifest, preserve its
+scope and comparison rules. Treat locked content as read-only until a
+content revision within that scope is authorized. A request to inspect or polish a different section
+does not unlock it. When the user requests approval before writing, show the
+exact original and complete proposed replacement, with a short reason; apply
+only the approved item. Existing authorization to apply a specific revision
+does not require a second approval.
+
+Keep factual correction, experimental-protocol confirmation, and wording
+approval distinct. A newly corrected value can invalidate a sentence without
+authorizing an unreviewed rewrite of locked prose. Include captions, table
+contents, equations, labels, and references when the declared lock includes
+them. Layout permission does not by itself authorize content changes.
+
+After an authorized edit, verify the written text and relevant cross-references
+before updating its lock; preserve the previous snapshot and reason. Never
+refresh a lock to conceal an accidental rewrite. Report source-only changes as
+uncompiled when the PDF has not been rebuilt. Do not add approval checkpoints
+to ordinary unlocked revisions.
+
 The constants and template paths below are full-draft initialization fallbacks, not facts
 about an existing manuscript. Do not apply them to a section-only rewrite or when local
 files establish another venue, anonymity setting, page rule, or directory layout.
@@ -47,7 +69,7 @@ sufficient; otherwise ask only for the smallest missing outline or evidence.
 
 Keep the existing `insleep` workflow, file layout, and defaults. Use the shared references below only when they improve writing quality:
 
-- Read `../shared-references/writing-principles.md` before drafting the Abstract, Introduction, Related Work, or when prose feels generic.
+- Read `../shared-references/writing-principles.md` before drafting the Abstract, Introduction, Related Work, or when prose feels generic; use its Evidence-led revision section for Method and experiment prose, table interpretation, and sentence-level revisions
 - Read `../shared-references/section-blueprints.md` **mandatorily** before drafting or rewriting a claim-bearing Abstract, Introduction contribution list, Method/analysis section, or Conclusion.
 - Read `../shared-references/venue-checklists.md` during the final write-up and submission-readiness pass.
 - Read `../shared-references/citation-discipline.md` only when the built-in DBLP/CrossRef workflow is insufficient.
@@ -230,12 +252,24 @@ Process sections in order. For each section:
 
 Before drafting the front matter, re-read the one-sentence contribution from `PAPER_PLAN.md`. The Abstract and Introduction should make that takeaway obvious before the reader reaches the full method.
 
+Resolve the active profile using `section-blueprints.md`: current user/venue
+requirements and the project's approved structure take precedence. For a new
+empirical AI method draft with no selected profile, the fallback is Abstract 10,
+contributions `2 / 3 / 3`, Conclusion 8. A compact Conclusion is also available
+when its roles fit the evidence. Do not expand an approved five-sentence section
+or rearrange approved contribution bullets just to restore the fallback.
+
+Record the selected counts and roles in the existing plan or section notes;
+section-only editing does not require creating a full PAPER_PLAN.md. Counts
+organize supported content, never justify filler or new claims. Count surface
+sentences, not LaTeX line breaks, decimals, citations, or abbreviations.
+
 #### Section-Specific Guidelines
 
 **§0 Abstract:**
-- Use the applicable semantic moves from `section-blueprints.md`; do not force a fixed sentence count
+- Follow the active profile; the new empirical-method fallback is 10 sentences in the role order defined by `section-blueprints.md`
 - Must be self-contained (understandable without reading the paper)
-- Start with the paper's specific contribution, not generic field-level background
+- Enter the specific problem and unresolved limitation quickly; avoid generic field-level background
 - Use only the canonical comparator, evidence, and scope from the Claim Ledger
 - Obey the venue word limit; if unknown, target 150-200 words
 - No citations, no undefined acronyms
@@ -245,7 +279,7 @@ Before drafting the front matter, re-read the one-sentence contribution from `PA
 - Open with a compelling hook (1-2 sentences, problem motivation)
 - State the gap clearly ("However, ...")
 - Give a brief approach overview before the reader gets lost in details
-- List 2-4 role-based, falsifiable contributions; map each to Claim IDs and evidence and do not force every bullet to begin with "We"
+- Follow the active contribution profile (new empirical-method fallback: 3 bullets with `2 / 3 / 3` sentences); map each falsifiable contribution to Claim IDs and evidence without forcing identical "We" openings
 - Preview the strongest result early instead of saving it for the experiments section
 - End with a brief roadmap ("The rest of this paper is organized as...")
 - Include the main result figure if space allows
@@ -281,10 +315,11 @@ Before drafting the front matter, re-read the one-sentence contribution from `PA
 - Target: 2.5-3 pages
 
 **§5 Conclusion:**
-- Mirror the paper's claim order without copying the Introduction
+- Follow the active profile; use the eight-sentence or compact pattern in `section-blueprints.md` only when it fits the project and evidence
+- Mirror the paper's claim order without copying whole Introduction paragraphs; preserve precise canonical headline wording when useful
 - Repeat only canonical evidence, comparators, protocols, and scope qualifiers
 - Introduce no new method, number, comparator, dataset, protocol, or claim
-- State limitations honestly; put Future Work in a separate paragraph derived from those limitations when space permits
+- State limitations honestly; preserve an existing separate Limitations/Future Work section and keep it outside the Conclusion count, or add one when required or useful to the paper
 - Ethics statement and reproducibility statement (if venue requires)
 - Target: 0.5 pages
 
@@ -561,6 +596,7 @@ mcp__codex__codex:
     8. Would a skim reader understand the contribution from the title, abstract, introduction, and Figure 1?
     9. Do Abstract, contribution bullets, body, evidence, and Conclusion mirror the Claim Ledger without comparator, number, protocol, or scope drift?
     10. Does the Conclusion introduce any new claim or unsupported expansion?
+    10. Does the active sentence profile match exactly (empirical AI method default: Abstract 10, contribution bullets 2/3/3, Conclusion 8)?
 
     For each issue, specify: severity (CRITICAL/MAJOR/MINOR), location, and fix.
 
@@ -591,6 +627,7 @@ Before declaring done:
 - [ ] No TODO/FIXME/XXX markers left in the text
 - [ ] No `[VERIFY]` markers left unchecked
 - [ ] Abstract is self-contained (understandable without reading the paper)
+- [ ] Active sentence profile is satisfied exactly (empirical AI method default: Abstract 10, contribution bullets 2 / 3 / 3, Conclusion 8)
 - [ ] Front-Matter Coverage Index is complete and matches the canonical Claim Ledger
 - [ ] Abstract and Conclusion use the same canonical comparator, headline evidence, protocol, and scope qualifiers
 - [ ] Conclusion introduces no new method, number, comparator, dataset, protocol, or claim
@@ -604,7 +641,9 @@ Before declaring done:
 
 ## Key Rules
 
-- **Large file handling**: If the Write tool fails due to file size, immediately retry using Bash (`cat << 'EOF' > file`) to write in chunks. Do NOT ask the user for permission — just do it silently.
+- **Large file handling**: if one edit is too large, split it into smaller
+  reviewable `apply_patch`/Edit operations. Never fall back to shell redirection
+  or a heredoc that overwrites the whole file.
 - **Do NOT generate author names, emails, or affiliations** — use anonymous block or placeholder
 - **Write complete sections, not outlines** — the output should be compilable LaTeX
 - **One file per section** — modular structure for easy editing

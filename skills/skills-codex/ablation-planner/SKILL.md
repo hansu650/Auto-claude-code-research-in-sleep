@@ -16,7 +16,21 @@ Systematically design ablation studies that answer the questions reviewers will 
 - The user explicitly requests ablation planning
 - `/auto-review-loop` identifies missing ablations
 
-## Workflow
+## Exploratory diagnostic or submission ablation plan
+
+When the next question is one discriminating control during an existing research
+loop, use [experiment-iteration.md](../shared-references/experiment-iteration.md)
+to select it directly. Do not require a positive result-to-claim verdict or this
+skill's full reviewer-led plan merely to test why a candidate failed. Useful
+controls include frozen/joint updates, branch removal, fixed-feature probes and
+objective changes, chosen by the explanation they separate.
+
+For a paper-oriented ablation plan, preserve the reviewer-led workflow below.
+Prioritize the unresolved claim with a credible signal and its smallest useful
+control before broad sensitivity sweeps. Reuse valid completed controls. A
+planning request does not itself authorize starting the runs in Step 5.
+
+## Workflow (paper-oriented plan)
 
 ### Step 1: Prepare Context
 
@@ -115,7 +129,7 @@ Before running anything, the local executor checks:
 4. Track results in `EXPERIMENT_LOG.md`
 5. After all ablations complete, update `findings.md` with insights
 
-## Rules
+## Rules for the paper-oriented plan
 
 - **The reviewer agent leads the design.** Do not pre-filter or bias the ablation list before external review sees it. The reviewer thinks like a reviewer; the local executor thinks like an engineer.
 - Every ablation must have a clear `what_it_tests` and `expected_if_component_matters`. No "just try it" experiments.

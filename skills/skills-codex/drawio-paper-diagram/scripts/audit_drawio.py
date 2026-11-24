@@ -36,6 +36,11 @@ SVG_RASTER_HREF_RE = re.compile(
     r"(?:[?#][^\"']*)?[\"']",
     re.IGNORECASE,
 )
+IMAGE_SHAPE_STYLE_RE = re.compile(r"(?:^|;)shape=image(?:;|$)", re.IGNORECASE)
+DOMAIN_PHOTO_STYLE_TOKEN_RE = re.compile(
+    r"(?:^|;)image=data:image/(?:png|jpe?g|webp)(?:;base64)?,[A-Za-z0-9+/=%_-]+(?=(?:;|$))",
+    re.IGNORECASE,
+)
 FAKE_MATH_RULES = (
     ("HTML subscript/superscript", re.compile(r"<\s*/?\s*(?:sub|sup)\b", re.I)),
     (
@@ -144,10 +149,18 @@ def geometry_has_point(cell: ET.Element, side: str) -> bool:
     return False
 
 
+def strip_allowed_domain_photo(style: str) -> str:
+    """Remove a single valid embedded domain-photo data URI from a shape=image style."""
+    if not IMAGE_SHAPE_STYLE_RE.search(style):
+        return style
+    return DOMAIN_PHOTO_STYLE_TOKEN_RE.sub("", style, count=1)
+
+
 def audit_page(
     page_name: str,
     model: ET.Element,
     require_math: bool,
+    allow_domain_photos: bool = False,
 ) -> list[Issue]:
     issues: list[Issue] = []
     cells = [node for node in model.iter() if node.tag.endswith("mxCell")]
@@ -229,13 +242,19 @@ def audit_page(
                     )
                 )
 
-        if raster_in_svg_data(value) or raster_in_svg_data(style):
+        checked_style = (
+            strip_allowed_domain_photo(style) if allow_domain_photos else style
+        )
+        if raster_in_svg_data(value) or raster_in_svg_data(checked_style):
             issues.append(
                 Issue(
                     "error",
                     page_name,
                     cell_id,
-                    "embedded raster image found; use Draw.io primitives or vector SVG",
+                    (
+                        "embedded raster image found; use Draw.io primitives or vector SVG "
+                        "(or pass --allow-domain-photos for real transparent domain photographs)"
+                    ),
                 )
             )
 
@@ -256,6 +275,11 @@ def parse_args() -> argparse.Namespace:
         "--strict",
         action="store_true",
         help="return failure when warnings are present",
+    )
+    parser.add_argument(
+        "--allow-domain-photos",
+        action="store_true",
+        help="allow embedded PNG/JPEG/WebP data URIs on shape=image cells for real domain photos (still rejects rasters inside SVGs, HTML values, or external paths)",
     )
     parser.add_argument(
         "--json",
@@ -279,7 +303,14 @@ def main() -> int:
 
     issues: list[Issue] = []
     for page_name, model in pages:
-        issues.extend(audit_page(page_name, model, args.require_math))
+        issues.extend(
+            audit_page(
+                page_name,
+                model,
+                args.require_math,
+                allow_domain_photos=args.allow_domain_photos,
+            )
+        )
 
     errors = sum(issue.severity == "error" for issue in issues)
     warnings = sum(issue.severity == "warning" for issue in issues)

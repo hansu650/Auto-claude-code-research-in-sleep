@@ -16,13 +16,20 @@ Represent the domain directly:
 
 - time series as curves;
 - spatial support as grids or highlighted cells;
+- graph structure as nodes and typed edges;
+- state transitions as states and directed transitions;
+- tensor transformations as shapes with explicit dimensions;
+- distributed components as service or device nodes with labeled messages;
+- multimodal or vision entities (e.g., e-commerce products, objects, scenes) as real high-resolution transparent-background RGBA cutouts rather than synthetic cartoon SVGs;
 - anomaly intervals as bands;
 - token membership as cells and incidence links;
 - temporal ownership as columns or timestamp markers;
 - score fields as heatmaps;
 - aggregation as a visible merge or a nearby equation.
 
-Avoid replacing every concept with an identical rounded rectangle.
+Avoid replacing every concept with an identical rounded rectangle. These
+examples are optional and non-exhaustive; select objects from the actual
+problem domain instead of forcing a time-series or vision vocabulary.
 
 ## Keep one primary route
 

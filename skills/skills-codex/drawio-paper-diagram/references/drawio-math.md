@@ -31,7 +31,7 @@ Escape XML characters when editing raw XML.
 | Plain or fake label | MathJax label |
 |---|---|
 | `i + 1` | `\(i+1\)` |
-| `Σ/3` | `\(\frac{1}{3}\sum_s\)` |
+| `(sum_s p_s) / 3` | `\(\frac{1}{3}\sum_s p_s\)` |
 | `p<sub>w</sub>` | `\(p_w\)` |
 | `14 x 14` | `\(14\times14\)` |
 | `[1,1,0]` | `\(\left[1,1,0\right]\)` |
@@ -43,7 +43,7 @@ Do not use ordinary Arial text, HTML `<sub>`/`<sup>`, or a Unicode operator to i
 
 Do not wrap these in MathJax:
 
-- method names such as IHP, NCTP, and ViTTrace;
+- method and module names such as Model-A, Encoder, and Fusion;
 - ordinary English labels such as Input, Encoder, and Output;
 - subfigure markers such as `(a)` and `(b)`.
 
